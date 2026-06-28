@@ -3,9 +3,6 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
 import { FieldValue } from "firebase-admin/firestore";
-import { writeFile } from "fs/promises";
-import { join } from "path";
-import { existsSync, mkdirSync } from "fs";
 
 export async function getStaffAction() {
   if (!adminDb) return [];
@@ -34,27 +31,9 @@ export async function createStaffAction(formData: FormData) {
   const telegram = formData.get("telegram") as string;
   const orderString = formData.get("order") as string;
   const order = parseInt(orderString) || 0;
-  const imageFile = formData.get("image") as File | null;
 
-  let imageUrl = null;
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const arrayBuffer = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const uploadDir = join(process.cwd(), "public", "uploads");
-      if (!existsSync(uploadDir)) {
-        mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const fileName = `${Date.now()}-${imageFile.name.replace(/\s+/g, "_")}`;
-      const filePath = join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-      imageUrl = `/uploads/${fileName}`;
-    } catch (e) {
-      console.error("Image upload error for staff:", e);
-    }
-  }
+  // Accept either direct URL or base64 from ImageUploader's hidden input
+  const imageUrl = (formData.get("imageUrl") as string) || null;
 
   try {
     await adminDb.collection("staff").add({
@@ -62,7 +41,7 @@ export async function createStaffAction(formData: FormData) {
       role,
       discord: discord || null,
       telegram: telegram || null,
-      imageUrl,
+      imageUrl: imageUrl || null,
       order,
       createdAt: FieldValue.serverTimestamp(),
     });
@@ -97,10 +76,11 @@ export async function updateStaffAction(id: string, formData: FormData) {
   const telegram = formData.get("telegram") as string;
   const orderString = formData.get("order") as string;
   const order = parseInt(orderString) || 0;
-  const imageFile = formData.get("image") as File | null;
-  const keepImage = formData.get("keepImage") === "true";
 
-  const updateData: any = {
+  // Accept either URL or base64 string from ImageUploader's hidden input
+  const imageUrlField = formData.get("imageUrl") as string | null;
+
+  const updateData: Record<string, unknown> = {
     nickname,
     role,
     discord: discord || null,
@@ -108,24 +88,9 @@ export async function updateStaffAction(id: string, formData: FormData) {
     order,
   };
 
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const arrayBuffer = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const uploadDir = join(process.cwd(), "public", "uploads");
-      if (!existsSync(uploadDir)) {
-        mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const fileName = `${Date.now()}-${imageFile.name.replace(/\s+/g, "_")}`;
-      const filePath = join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-      updateData.imageUrl = `/uploads/${fileName}`;
-    } catch (e) {
-      console.error("Image upload error in updateStaffAction:", e);
-    }
-  } else if (!keepImage) {
+  if (imageUrlField) {
+    updateData.imageUrl = imageUrlField;
+  } else {
     updateData.imageUrl = null;
   }
 

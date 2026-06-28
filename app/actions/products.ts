@@ -40,7 +40,8 @@ export async function createProductAction(formData: FormData) {
   const price = String(formData.get("price") ?? "").trim();
   const category = String(formData.get("category") ?? "RANKLAR");
   const type = String(formData.get("type") ?? "rank");
-  const image = String(formData.get("image") ?? "").trim();
+  // Accept both 'imageUrl' (from ImageUploader) and legacy 'image' field
+  const image = String(formData.get("imageUrl") ?? formData.get("image") ?? "").trim();
   const order = parseInt(formData.get("order") as string) || 0;
   const description = String(formData.get("description") ?? "").trim();
   const description_ru = String(formData.get("description_ru") ?? "").trim();
@@ -99,7 +100,8 @@ export async function updateProductAction(id: string, formData: FormData) {
   const price = String(formData.get("price") ?? "").trim();
   const category = String(formData.get("category") ?? "RANKLAR");
   const type = String(formData.get("type") ?? "rank");
-  const image = String(formData.get("image") ?? "").trim();
+  // Accept both 'imageUrl' (from ImageUploader) and legacy 'image' field
+  const image = String(formData.get("imageUrl") ?? formData.get("image") ?? "").trim();
   const order = parseInt(formData.get("order") as string) || 0;
   const description = String(formData.get("description") ?? "").trim();
   const description_ru = String(formData.get("description_ru") ?? "").trim();

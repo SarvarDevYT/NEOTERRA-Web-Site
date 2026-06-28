@@ -21,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Shield, Trash2, Plus, User, Send, MessageSquare, Edit2, X, Upload } from "lucide-react";
+import { Shield, Trash2, Plus, User, Send, MessageSquare, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import { getStaffAction, createStaffAction, deleteStaffAction, updateStaffAction } from "@/app/actions/staff";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 
 interface StaffMember {
   id: string;
@@ -47,7 +48,7 @@ export default function AdminStaffPage() {
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
 
-  // Preview states
+  // Image states
   const [preview, setPreview] = useState<string | null>(null);
   const [editPreview, setEditPreview] = useState<string | null>(null);
 
@@ -60,27 +61,6 @@ export default function AdminStaffPage() {
     setStaff(data as unknown as StaffMember[]);
     setIsLoading(false);
   }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (isEdit) {
-          setEditPreview(reader.result as string);
-        } else {
-          setPreview(reader.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    } else {
-      if (isEdit) {
-        setEditPreview(null);
-      } else {
-        setPreview(null);
-      }
-    }
-  };
 
   async function handleAddStaff(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -106,12 +86,7 @@ export default function AdminStaffPage() {
     setIsSubmitLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    if (editingMember.imageUrl && editPreview === editingMember.imageUrl) {
-      formData.set("keepImage", "true");
-    } else if (!editPreview) {
-      formData.set("keepImage", "false");
-    }
-
+    // imageUrl is passed by ImageUploader's hidden input automatically
     const result = await updateStaffAction(editingMember.id, formData);
 
     if (result.success) {
@@ -219,35 +194,12 @@ export default function AdminStaffPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Maxsus Skin / Rasm (Ixtiyoriy)</label>
-                <div className="relative group border border-white/10 border-dashed rounded-2xl p-4 hover:border-purple-500/50 transition-colors">
-                  <input 
-                    type="file" 
-                    name="image" 
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(e, false)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  {preview ? (
-                    <div className="relative">
-                      <img src={preview} alt="Preview" className="w-full h-32 object-cover rounded-md" />
-                      <button 
-                        type="button"
-                        onClick={() => setPreview(null)}
-                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 z-20"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-4 text-zinc-500 group-hover:text-zinc-400">
-                      <Upload className="h-8 w-8 mb-2" />
-                      <span className="text-xs">Rasm yuklang</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ImageUploader
+                name="imageFile"
+                value={preview}
+                onChange={setPreview}
+                label="Maxsus Skin / Rasm (Ixtiyoriy)"
+              />
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (0 - Ustunlik)</label>
@@ -403,35 +355,12 @@ export default function AdminStaffPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Xodim rasmi (Yangi)</label>
-                <div className="relative group border border-white/10 border-dashed rounded-2xl p-4 hover:border-purple-500/50 transition-colors">
-                  <input 
-                    type="file" 
-                    name="image" 
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(e, true)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  {editPreview ? (
-                    <div className="relative">
-                      <img src={editPreview} alt="Preview" className="w-full h-32 object-cover rounded-md" />
-                      <button 
-                        type="button"
-                        onClick={() => setEditPreview(null)}
-                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 z-20"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-4 text-zinc-500 group-hover:text-zinc-400">
-                      <Upload className="h-8 w-8 mb-2" />
-                      <span className="text-xs">Yangi rasm tanlang (ixtiyoriy)</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ImageUploader
+                name="imageFile"
+                value={editPreview}
+                onChange={setEditPreview}
+                label="Xodim rasmi (Yangilash, ixtiyoriy)"
+              />
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (Order)</label>

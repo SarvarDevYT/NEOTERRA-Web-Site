@@ -12,7 +12,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { 
@@ -26,8 +25,9 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
-import { Newspaper, Plus, Trash2, Calendar, UserIcon, Upload, X, Edit2 } from "lucide-react";
+import { Newspaper, Plus, Trash2, Calendar, UserIcon, Edit2 } from "lucide-react";
 import { toast } from "sonner";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 
 interface NewsItem {
   id: string;
@@ -44,8 +44,8 @@ interface NewsItem {
 
 export default function NewsManagerPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [editPreview, setEditPreview] = useState<string | null>(null);
+  const [imageValue, setImageValue] = useState<string | null>(null);
+  const [editImageValue, setEditImageValue] = useState<string | null>(null);
   const [state, formAction] = useActionState(createNewsAction, { error: "" });
 
   // Edit states
@@ -63,30 +63,9 @@ export default function NewsManagerPage() {
     setNews(data);
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (isEdit) {
-          setEditPreview(reader.result as string);
-        } else {
-          setPreview(reader.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    } else {
-      if (isEdit) {
-        setEditPreview(null);
-      } else {
-        setPreview(null);
-      }
-    }
-  };
-
   const openEditDialog = (item: NewsItem) => {
     setEditingItem(item);
-    setEditPreview(item.image);
+    setEditImageValue(item.image);
     setIsEditOpen(true);
   };
 
@@ -96,12 +75,7 @@ export default function NewsManagerPage() {
     setIsEditLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    if (!editPreview) {
-      formData.set("oldImage", "");
-    } else if (editingItem.image && editPreview === editingItem.image) {
-      formData.set("oldImage", editingItem.image);
-    }
-
+    // imageUrl is already injected by ImageUploader's hidden input
     const result = await updateNewsAction(editingItem.id, formData);
 
     if (result && result.error) {
@@ -180,37 +154,15 @@ export default function NewsManagerPage() {
                     className="border-zinc-800 bg-zinc-950 text-white" 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-zinc-400 mb-1">
-                    Rasm yuklash
-                  </label>
-                  <div className="relative group border-2 border-dashed border-zinc-800 rounded-lg p-4 hover:border-purple-500/50 transition-colors">
-                    <input 
-                      type="file" 
-                      name="image" 
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, false)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    {preview ? (
-                      <div className="relative">
-                        <img src={preview} alt="Preview" className="w-full h-32 object-cover rounded-md" />
-                        <button 
-                          type="button"
-                          onClick={() => setPreview(null)}
-                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 z-20"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-4 text-zinc-500 group-hover:text-zinc-400">
-                        <Upload className="h-8 w-8 mb-2" />
-                        <span className="text-xs">Rasm tanlang</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+
+                {/* New ImageUploader */}
+                <ImageUploader
+                  name="imageUrl"
+                  value={imageValue}
+                  onChange={setImageValue}
+                  label="Rasm (Fayl yoki URL)"
+                />
+
                 <div className="space-y-2">
                   <Textarea 
                     name="content" 
@@ -348,8 +300,9 @@ export default function NewsManagerPage() {
       {/* Edit Dialog Modal */}
       {editingItem && (
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="sm:max-w-[480px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
+          <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
             <DialogHeader>
+              <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />
               <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter">
                 YANGILIKNI <span className="text-purple-500">TAHRIRLASH</span>
               </DialogTitle>
@@ -395,35 +348,15 @@ export default function NewsManagerPage() {
                   className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold" 
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Rasm tahrirlash</label>
-                <div className="relative group border border-white/10 border-dashed rounded-2xl p-4 hover:border-purple-500/50 transition-colors">
-                  <input 
-                    type="file" 
-                    name="image" 
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(e, true)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  {editPreview ? (
-                    <div className="relative">
-                      <img src={editPreview} alt="Preview" className="w-full h-32 object-cover rounded-md" />
-                      <button 
-                        type="button"
-                        onClick={() => setEditPreview(null)}
-                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 z-20"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-4 text-zinc-500 group-hover:text-zinc-400">
-                      <Upload className="h-8 w-8 mb-2" />
-                      <span className="text-xs">Yangi rasm tanlang (ixtiyoriy)</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+
+              {/* ImageUploader for edit */}
+              <ImageUploader
+                name="imageUrl"
+                value={editImageValue}
+                onChange={setEditImageValue}
+                label="Rasm tahrirlash"
+              />
+
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Yangilik matni (UZ)</label>
                 <Textarea 

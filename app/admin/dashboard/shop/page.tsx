@@ -21,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Plus, ShoppingBag, Edit2, Layers, Image as ImageIcon } from "lucide-react";
+import { Trash2, Plus, ShoppingBag, Edit2, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { getProductsAction, createProductAction, deleteProductAction, updateProductAction } from "@/app/actions/products";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 
 interface Product {
   id: string;
@@ -58,6 +59,10 @@ export default function AdminShopPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Image states
+  const [addImageValue, setAddImageValue] = useState<string | null>(null);
+  const [editImageValue, setEditImageValue] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -120,6 +125,7 @@ export default function AdminShopPage() {
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
+    setEditImageValue(product.image || null);
     setIsEditOpen(true);
   };
 
@@ -267,16 +273,13 @@ export default function AdminShopPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="image" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Rasm manzili (Image Path)</Label>
-                <Input
-                  id="image"
-                  name="image"
-                  placeholder="Masalan: /images/pink.jpg, /images/donate-case.jpg"
-                  className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                />
-                <p className="text-[9px] text-zinc-500 ml-1">Tizimdagi tayyor rasmlar: /images/[light-blue, pink, red, yellow, blue, green, orange, donate-case, kit-case, item-case, sphere-case, token, barrier].jpg</p>
-              </div>
+              <ImageUploader
+                name="imageUrl"
+                value={addImageValue}
+                onChange={setAddImageValue}
+                label="Rasm (Fayl yoki URL)"
+              />
+              <p className="text-[9px] text-zinc-600 ml-1 -mt-1">Tayyor rasmlar: /images/[light-blue, pink, red, yellow, blue, green, orange, donate-case, kit-case].jpg</p>
 
               <DialogFooter className="pt-4">
                 <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95">
@@ -479,15 +482,13 @@ export default function AdminShopPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Rasm manzili (Image Path)</Label>
-                <Input
-                  name="image"
-                  defaultValue={editingProduct.image}
-                  placeholder="Masalan: /images/pink.jpg"
-                  className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold"
-                />
-              </div>
+              <ImageUploader
+                name="imageUrl"
+                value={editImageValue}
+                onChange={setEditImageValue}
+                label="Rasm tahrirlash"
+              />
+              <p className="text-[9px] text-zinc-600 ml-1 -mt-1">Tayyor rasmlar: /images/[light-blue, pink, red, yellow, blue, green].jpg</p>
 
               <DialogFooter className="pt-4">
                 <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20">

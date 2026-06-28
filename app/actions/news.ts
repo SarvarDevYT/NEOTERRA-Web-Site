@@ -3,9 +3,6 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { writeFile } from "fs/promises";
-import { join } from "path";
-import { existsSync, mkdirSync } from "fs";
 import { FieldValue } from "firebase-admin/firestore";
 
 export async function createNewsAction(prevState: any, formData: FormData) {
@@ -17,7 +14,9 @@ export async function createNewsAction(prevState: any, formData: FormData) {
   const content_en = String(formData.get("content_en") ?? "").trim();
   const author = String(formData.get("author") ?? "").trim();
   const dateStr = formData.get("date") as string;
-  const imageFile = formData.get("image") as File;
+
+  // Accept imageUrl string (URL or base64) from ImageUploader hidden input
+  const imageUrl = (formData.get("imageUrl") as string) || null;
 
   if (!title || !content) {
     return { error: "Sarlavha va matn to'ldirilishi shart." };
@@ -25,27 +24,6 @@ export async function createNewsAction(prevState: any, formData: FormData) {
 
   if (!adminDb) {
     return { error: "Firebase Admin sozlanmagan!" };
-  }
-
-  let imagePath = null;
-
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const uploadDir = join(process.cwd(), "public", "uploads");
-      if (!existsSync(uploadDir)) {
-        mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const fileName = `${Date.now()}-${imageFile.name.replace(/\s+/g, "_")}`;
-      const filePath = join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-      imagePath = `/uploads/${fileName}`;
-    } catch (e) {
-      console.error("Image upload error:", e);
-    }
   }
 
   try {
@@ -56,7 +34,7 @@ export async function createNewsAction(prevState: any, formData: FormData) {
       content_ru: content_ru || null,
       title_en: title_en || null,
       content_en: content_en || null,
-      image: imagePath,
+      image: imageUrl,
       author: author || null,
       createdAt: dateStr ? new Date(dateStr) : FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
@@ -81,32 +59,12 @@ export async function updateNewsAction(id: string, formData: FormData) {
   const title_en = String(formData.get("title_en") ?? "").trim();
   const content_en = String(formData.get("content_en") ?? "").trim();
   const author = String(formData.get("author") ?? "").trim();
-  const imageFile = formData.get("image") as File | null;
-  const oldImage = formData.get("oldImage") as string | null;
+
+  // Accept imageUrl string (URL or base64) from ImageUploader hidden input
+  const imageUrl = (formData.get("imageUrl") as string) || null;
 
   if (!title || !content) {
     return { error: "Sarlavha va matn to'ldirilishi shart." };
-  }
-
-  let finalImagePath = oldImage || null;
-
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const uploadDir = join(process.cwd(), "public", "uploads");
-      if (!existsSync(uploadDir)) {
-        mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const fileName = `${Date.now()}-${imageFile.name.replace(/\s+/g, "_")}`;
-      const filePath = join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-      finalImagePath = `/uploads/${fileName}`;
-    } catch (e) {
-      console.error("Image upload error in update:", e);
-    }
   }
 
   try {
@@ -117,7 +75,7 @@ export async function updateNewsAction(id: string, formData: FormData) {
       content_ru: content_ru || null,
       title_en: title_en || null,
       content_en: content_en || null,
-      image: finalImagePath,
+      image: imageUrl,
       author: author || null,
       updatedAt: FieldValue.serverTimestamp(),
     });
