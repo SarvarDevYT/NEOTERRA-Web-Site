@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/litebans-client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("LITEBANS_DATABASE_URL")
+}
+
+model litebans_bans {
+  id             Int     @id @default(autoincrement())
+  uuid           String? @db.VarChar(36)
+  ip             String? @db.VarChar(45)
+  reason         String  @db.Text
+  banned_by_uuid String  @db.VarChar(36)
+  banned_by_name String? @db.VarChar(128)
+  removed_by_uuid String? @db.VarChar(36)
+  removed_by_name String? @db.VarChar(128)
+  removed_by_reason String? @db.Text
+  removed_by_date DateTime? @db.Timestamp(0)
+  time           BigInt
+  until          BigInt
+  server_scope   String? @db.VarChar(32)
+  server_origin  String? @db.VarChar(32)
+  active         Boolean
+
+  @@index([active], map: "idx_litebans_bans_active")
+  @@index([uuid], map: "idx_litebans_bans_uuid")
+  @@index([ip], map: "idx_litebans_bans_ip")
+}
+
+model litebans_mutes {
+  id             Int     @id @default(autoincrement())
+  uuid           String? @db.VarChar(36)
+  ip             String? @db.VarChar(45)
+  reason         String  @db.Text
+  banned_by_uuid String  @db.VarChar(36)
+  banned_by_name String? @db.VarChar(128)
+  removed_by_uuid String? @db.VarChar(36)
+  removed_by_name String? @db.VarChar(128)
+  removed_by_reason String? @db.Text
+  removed_by_date DateTime? @db.Timestamp(0)
+  time           BigInt
+  until          BigInt
+  server_scope   String? @db.VarChar(32)
+  server_origin  String? @db.VarChar(32)
+  active         Boolean
+
+  @@index([active], map: "idx_litebans_mutes_active")
+  @@index([uuid], map: "idx_litebans_mutes_uuid")
+}
+
+model litebans_history {
+  id   Int     @id @default(autoincrement())
+  date BigInt?
+  name String? @db.VarChar(128)
+  uuid String? @db.VarChar(36)
+  ip   String? @db.VarChar(45)
+
+  @@index([name], map: "idx_litebans_history_name")
+  @@index([uuid], map: "idx_litebans_history_uuid")
+}

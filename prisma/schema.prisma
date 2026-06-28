@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Auth {
+  nickname          String  @map("NICKNAME") @db.VarChar(255)
+  lowerCaseNickname String  @id @map("LOWERCASENICKNAME") @db.VarChar(255)
+  hash              String  @map("HASH") @db.VarChar(255)
+  ip                String? @map("IP") @db.VarChar(255)
+  totpToken         String? @map("TOTPTOKEN") @db.VarChar(255)
+  regDate           BigInt? @map("REGDATE")
+  uuid              String? @map("UUID") @db.VarChar(255)
+  premiumUuid       String? @map("PREMIUMUUID") @db.VarChar(255)
+  loginIp           String? @map("LOGINIP") @db.VarChar(255)
+  loginDate         BigInt? @map("LOGINDATE")
+  issuedTime        BigInt? @map("ISSUEDTIME")
+
+  @@map("AUTH")
+}
+
+model SOCIAL {
+  LOWERCASENICKNAME String   @id @db.VarChar(255)
+  VK_ID             BigInt?
+  TELEGRAM_ID       BigInt?
+  DISCORD_ID        BigInt?
+  BLOCKED           Boolean?
+  TOTP_ENABLED      Boolean?
+  NOTIFY_ENABLED    Boolean?
+}
+
+model news {
+  id        Int       @id @default(autoincrement())
+  title     String    @db.VarChar(255)
+  content   String    @db.Text
+  image     String?   @db.VarChar(255)
+  author    String?   @db.VarChar(100)
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @default(now())
+
+  @@map("NEWS")
+}
+
+model rules {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  description String    @db.Text
+  order       Int?      @default(0)
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @default(now())
+
+  @@map("RULES")
+}
+
+model Staff {
+  id        Int      @id @default(autoincrement())
+  nickname  String   @unique
+  role      String   // Owner, Tex.Admin, Admin, Moderator, Helper, Sponsor
+  discord   String?
+  telegram  String?
+  imageUrl  String?  @db.LongText
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("STAFF")
+}
