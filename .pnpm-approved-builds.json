@@ -1,0 +1,7 @@
+{
+  "onlyBuiltDependencies": [
+    "@firebase/util",
+    "protobufjs",
+    "sharp"
+  ]
+}
