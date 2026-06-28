@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     siteName: "NeoTerra",
     images: [
       {
-        url: "/images/pink.jpg",
+        url: "/neoterra-new-logo.jpg",
         width: 1200,
         height: 630,
         alt: "NeoTerra Minecraft Server Uzbekistan",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SITE.NEOTERRA.UZ - NeoTerra Minecraft Server",
     description: "O'zbekistondagi eng innovatsion Minecraft serveri! play.neoterra.uz / mc.neoterra.uz",
-    images: ["/images/pink.jpg"],
+    images: ["/neoterra-new-logo.jpg"],
   },
   generator: "v0.app",
   icons: {
