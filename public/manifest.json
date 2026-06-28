@@ -1,0 +1,52 @@
+{
+  "name": "NeoTerra - Minecraft Server",
+  "short_name": "NeoTerra",
+  "description": "O'zbekistondagi eng zamonaviy Minecraft serveri. Ranks, crates, keys va boshqa buyumlarni sotib oling!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "uz",
+  "icons": [
+    {
+      "src": "/apple-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/neoterra-new-logo.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "NeoTerra Minecraft Server"
+    }
+  ],
+  "categories": ["games", "shopping"],
+  "shortcuts": [
+    {
+      "name": "Do'kon",
+      "short_name": "Do'kon",
+      "description": "NeoTerra do'koniga o'ting",
+      "url": "/shop",
+      "icons": [{ "src": "/apple-icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Yangiliklar",
+      "short_name": "Yangiliklar",
+      "description": "Oxirgi yangiliklar",
+      "url": "/news",
+      "icons": [{ "src": "/apple-icon.png", "sizes": "192x192" }]
+    }
+  ]
+}

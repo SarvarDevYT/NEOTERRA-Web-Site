@@ -65,6 +65,7 @@ export const metadata: Metadata = {
     images: ["/neoterra-new-logo.jpg"],
   },
   generator: "v0.app",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       {
@@ -73,6 +74,11 @@ export const metadata: Metadata = {
       },
     ],
     apple: "/apple-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "NeoTerra",
   },
 }
 
@@ -83,6 +89,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#7c3aed" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
       <body className={`font-sans antialiased bg-background text-foreground`}>
         <ThemeProvider
           attribute="class"
