@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate && prisma generate --schema=prisma/litebans.prisma",
+    "postinstall": "prisma generate --schema=prisma/schema.prisma || true && prisma generate --schema=prisma/litebans.prisma || true",
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
