@@ -77,9 +77,13 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                      <h3 className="text-2xl font-black text-white italic tracking-tighter mb-1">
                        {member.nickname}
                      </h3>
-                     <span className="text-primary font-black uppercase text-xs tracking-[0.2em] mb-6">
-                       {displayRole}
-                     </span>
+                     <div className="flex flex-wrap gap-1.5 justify-center mb-6">
+                        {displayRole.split(",").map((r: string) => r.trim()).filter(Boolean).map((r: string) => (
+                          <span key={r} className="text-primary font-black uppercase text-[10px] tracking-[0.2em] px-2.5 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
+                            {r}
+                          </span>
+                        ))}
+                      </div>
 
                      <div className="w-full h-px bg-white/5 mb-6" />
 

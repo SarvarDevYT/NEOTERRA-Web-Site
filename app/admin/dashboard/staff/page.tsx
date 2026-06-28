@@ -18,6 +18,7 @@ import { Shield, Trash2, Plus, User, Send, MessageSquare, Edit2 } from "lucide-r
 import { toast } from "sonner";
 import { getStaffAction, createStaffAction, deleteStaffAction, updateStaffAction } from "@/app/actions/staff";
 import { ImageUploader } from "@/components/admin/ImageUploader";
+import { TagRoleInput } from "@/components/admin/TagRoleInput";
 
 interface StaffMember {
   id: string;
@@ -149,16 +150,7 @@ export default function AdminStaffPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Lavozim</label>
-                <Input
-                  id="role"
-                  name="role"
-                  placeholder="Masalan: Owner, Admin, Moderator..."
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                  required
-                />
-              </div>
+              <TagRoleInput name="role" />
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -250,11 +242,14 @@ export default function AdminStaffPage() {
                   )}
                   <div>
                     <CardTitle className="text-lg font-bold text-white">{member.nickname}</CardTitle>
-                    <CardDescription className="text-purple-400 font-black uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
-                      <span>{member.role}</span>
-                      <span className="text-zinc-700">•</span>
-                      <span>Order: {member.order}</span>
-                    </CardDescription>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {member.role.split(",").map((r) => r.trim()).filter(Boolean).map((r) => (
+                        <span key={r} className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                          {r}
+                        </span>
+                      ))}
+                      <span className="text-[9px] text-zinc-600 font-bold self-center">#{member.order}</span>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -305,16 +300,7 @@ export default function AdminStaffPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Lavozim</label>
-                <Input
-                  name="role"
-                  defaultValue={editingMember.role}
-                  placeholder="Masalan: Owner, Admin, Moderator..."
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700"
-                  required
-                />
-              </div>
+              <TagRoleInput name="role" defaultValue={editingMember.role} />
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
