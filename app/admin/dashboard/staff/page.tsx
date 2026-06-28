@@ -174,7 +174,7 @@ export default function AdminStaffPage() {
               </div>
 
               <ImageUploader
-                name="imageFile"
+                name="imageUrl"
                 value={preview}
                 onChange={setPreview}
                 label="Maxsus Skin / Rasm (Ixtiyoriy)"
@@ -324,7 +324,7 @@ export default function AdminStaffPage() {
               </div>
 
               <ImageUploader
-                name="imageFile"
+                name="imageUrl"
                 value={editPreview}
                 onChange={setEditPreview}
                 label="Xodim rasmi (Yangilash, ixtiyoriy)"
