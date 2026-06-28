@@ -14,13 +14,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Shield, Trash2, Plus, User, Send, MessageSquare, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import { getStaffAction, createStaffAction, deleteStaffAction, updateStaffAction } from "@/app/actions/staff";
@@ -36,7 +29,6 @@ interface StaffMember {
   order: number;
 }
 
-const ROLES = ["Owner", "Tex.Admin", "Admin", "Moderator", "Helper", "Sponsor"];
 
 export default function AdminStaffPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -159,18 +151,13 @@ export default function AdminStaffPage() {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Lavozim</label>
-                <Select name="role" defaultValue="Helper">
-                  <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
-                    <SelectValue placeholder="Lavozimni tanlang" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
-                    {ROLES.map((role) => (
-                      <SelectItem key={role} value={role} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
-                        {role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="role"
+                  name="role"
+                  placeholder="Masalan: Owner, Admin, Moderator..."
+                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -320,18 +307,13 @@ export default function AdminStaffPage() {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Lavozim</label>
-                <Select name="role" defaultValue={editingMember.role}>
-                  <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold">
-                    <SelectValue placeholder="Lavozimni tanlang" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
-                    {ROLES.map((role) => (
-                      <SelectItem key={role} value={role} className="focus:bg-primary/20 rounded-lg m-1 cursor-pointer">
-                        {role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  name="role"
+                  defaultValue={editingMember.role}
+                  placeholder="Masalan: Owner, Admin, Moderator..."
+                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700"
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
