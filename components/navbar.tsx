@@ -237,7 +237,9 @@ export function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-64 bg-zinc-950/80 backdrop-blur-2xl border-white/10 p-2 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)]" align="end">
                   <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-2 py-1.5 flex flex-col gap-1">
-                    <span>Mening Profilim</span>
+                    <span>
+                      {lang === "uz" ? "Mening Profilim" : lang === "ru" ? "Мой Профиль" : "My Profile"}
+                    </span>
                     <span className="text-white/40 normal-case font-medium">{email}</span>
                   </DropdownMenuLabel>
                   
@@ -254,12 +256,14 @@ export function Navbar() {
                       </>
                     ) : (
                       <div className="text-center py-4">
-                        <span className="text-xs text-zinc-500 font-bold block mb-2">Minecraft nik bog'lanmagan</span>
+                        <span className="text-xs text-zinc-500 font-bold block mb-2">
+                          {lang === "uz" ? "Minecraft nik bog'lanmagan" : lang === "ru" ? "Никнейм Minecraft не привязан" : "Minecraft nickname not linked"}
+                        </span>
                         <Button 
                           onClick={() => setIsLinkDialogOpen(true)}
                           className="text-[10px] font-bold tracking-wider uppercase h-8 px-4 rounded-full bg-primary hover:bg-primary/90"
                         >
-                          Bog'lash
+                          {lang === "uz" ? "Bog'lash" : lang === "ru" ? "Привязать" : "Link Nickname"}
                         </Button>
                       </div>
                     )}
@@ -270,7 +274,9 @@ export function Navbar() {
                   <Link href="/settings">
                     <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-primary/10 focus:text-primary py-2.5 rounded-md">
                       <Key className="size-4 text-white/70" />
-                      <span className="font-bold text-xs uppercase tracking-wider text-white/70">Sozlamalar</span>
+                      <span className="font-bold text-xs uppercase tracking-wider text-white/70">
+                        {lang === "uz" ? "Sozlamalar" : lang === "ru" ? "Настройки" : "Settings"}
+                      </span>
                     </DropdownMenuItem>
                   </Link>
 
@@ -289,7 +295,9 @@ export function Navbar() {
                     className="flex items-center gap-2 cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive py-2.5 rounded-md"
                   >
                     <LogOutIcon className="size-4" />
-                    <span className="font-bold text-xs uppercase tracking-wider">Chiqish</span>
+                    <span className="font-bold text-xs uppercase tracking-wider">
+                      {lang === "uz" ? "Chiqish" : lang === "ru" ? "Выйти" : "Logout"}
+                    </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

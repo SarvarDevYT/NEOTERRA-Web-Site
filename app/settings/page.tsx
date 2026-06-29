@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { 
   linkWithPopup, 
@@ -14,9 +14,10 @@ import {
 } from "firebase/auth";
 import { auth as firebaseClientAuth } from "@/lib/firebase";
 import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-profile";
-import { Shield, Key, Mail, Lock, User, LogOut, Check, Sparkles } from "lucide-react";
+import { Shield, Key, Mail, User, LogOut, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function SettingsPage() {
   const { uid, email, minecraftUsername, isAdmin, setAuth, setMinecraftUsername, logout: localLogout } = useAuth();
@@ -26,6 +27,7 @@ export default function SettingsPage() {
   const [userAuth, setUserAuth] = useState<any>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const { lang } = useTranslation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseClientAuth, (user) => {
@@ -50,20 +52,20 @@ export default function SettingsPage() {
       if (res.success) {
         setMinecraftUsername(nickInput.trim());
         toast({
-          title: "Muvaffaqiyatli!",
+          title: lang === "uz" ? "Muvaffaqiyatli!" : lang === "ru" ? "Успешно!" : "Success!",
           description: res.message,
         });
       } else {
         toast({
-          title: "Xatolik!",
+          title: lang === "uz" ? "Xatolik!" : lang === "ru" ? "Ошибка!" : "Error!",
           description: res.message,
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: "Xatolik!",
-        description: "Baza bilan bog'lanishda muammo.",
+        title: lang === "uz" ? "Xatolik!" : lang === "ru" ? "Ошибка!" : "Error!",
+        description: lang === "uz" ? "Baza bilan bog'lanishda muammo." : lang === "ru" ? "Проблема подключения к базе данных." : "Database connection issue.",
         variant: "destructive",
       });
     } finally {
@@ -78,7 +80,6 @@ export default function SettingsPage() {
 
     try {
       await linkWithPopup(firebaseClientAuth.currentUser, provider);
-      // Refresh profile local auth
       const user = firebaseClientAuth.currentUser;
       const profile = await getUserProfile(user.uid, user.email);
       setAuth({
@@ -88,14 +89,14 @@ export default function SettingsPage() {
         isAdmin: profile?.role === "admin" || profile?.role === "owner" || user.email === "admin@neoterra.uz",
       });
       toast({
-        title: "Muvaffaqiyatli!",
-        description: "Google akkaunti muvaffaqiyatli ulandi.",
+        title: lang === "uz" ? "Muvaffaqiyatli!" : lang === "ru" ? "Успешно!" : "Success!",
+        description: lang === "uz" ? "Google akkaunti muvaffaqiyatli ulandi." : lang === "ru" ? "Аккаунт Google успешно привязан." : "Google account linked successfully.",
       });
     } catch (error: any) {
       console.error("Link google error:", error);
       toast({
-        title: "Xatolik!",
-        description: error.message || "Google ulanishda xato yuz berdi. Balki u allaqachon boshqa akkauntga ulangan.",
+        title: lang === "uz" ? "Xatolik!" : lang === "ru" ? "Ошибка!" : "Error!",
+        description: error.message || "Google ulanishda xato yuz berdi.",
         variant: "destructive",
       });
     } finally {
@@ -107,8 +108,8 @@ export default function SettingsPage() {
     await firebaseSignOut(firebaseClientAuth);
     localLogout();
     toast({
-      title: "Chiqildi",
-      description: "Siz tizimdan chiqdingiz.",
+      title: lang === "uz" ? "Chiqildi" : lang === "ru" ? "Вышли" : "Logged out",
+      description: lang === "uz" ? "Siz tizimdan chiqdingiz." : lang === "ru" ? "Вы успешно вышли из системы." : "You have logged out successfully.",
     });
     router.push("/");
   };
@@ -120,14 +121,15 @@ export default function SettingsPage() {
   if (!uid) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">
-        <p className="text-zinc-500 font-bold uppercase tracking-widest animate-pulse">Sozlamalar yuklanmoqda...</p>
+        <p className="text-zinc-500 font-bold uppercase tracking-widest animate-pulse">
+          {lang === "uz" ? "Sozlamalar yuklanmoqda..." : lang === "ru" ? "Загрузка настроек..." : "Loading settings..."}
+        </p>
       </div>
     );
   }
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white relative overflow-hidden flex flex-col justify-between">
-      {/* Background Glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
@@ -137,25 +139,38 @@ export default function SettingsPage() {
             <Key className="h-10 w-10 animate-pulse" />
           </div>
           <h1 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-4 liquid-shadow">
-            PROFIL <span className="text-purple-500">SOZLAMALARI</span>
+            {lang === "uz" ? (
+              <>PROFIL <span className="text-purple-500">SOZLAMALARI</span></>
+            ) : lang === "ru" ? (
+              <>НАСТРОЙКИ <span className="text-purple-500">ПРОФИЛЯ</span></>
+            ) : (
+              <>PROFILE <span className="text-purple-500">SETTINGS</span></>
+            )}
           </h1>
           <p className="text-zinc-400 max-w-xl mx-auto font-medium">
-            Akkaunt sozlamalarini boshqarish, ijtimoiy tarmoqlarni ulash va Minecraft nikingizni tahrirlash.
+            {lang === "uz"
+              ? "Akkaunt sozlamalarini boshqarish, ijtimoiy tarmoqlarni ulash va Minecraft nikingizni tahrirlash."
+              : lang === "ru"
+              ? "Управление настройками аккаунта, привязка социальных сетей и редактирование вашего никнейма Minecraft."
+              : "Manage account settings, link social networks and edit your Minecraft nickname."}
           </p>
         </header>
 
         <div className="grid gap-8 md:grid-cols-12">
-          {/* Main profile settings */}
           <div className="md:col-span-7 space-y-6">
             <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
                   <User className="h-5 w-5 text-purple-500" />
-                  Minecraft Nikni Bog'lash
+                  {lang === "uz" ? "Minecraft Nikni Bog'lash" : lang === "ru" ? "Привязать никнейм Minecraft" : "Link Minecraft Nickname"}
                 </CardTitle>
                 <CardDescription className="text-zinc-400 font-medium">
-                  Serverdagi do'kondan foydalanish va statistikangizni ko'rish uchun nikingizni kiriting.
+                  {lang === "uz"
+                    ? "Serverdagi do'kondan foydalanish va statistikangizni ko'rish uchun nikingizni kiriting."
+                    : lang === "ru"
+                    ? "Введите никнейм для доступа к магазину и просмотра статистики."
+                    : "Enter your nickname to access the store and view your stats."}
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleLinkNickname} className="space-y-4">
@@ -178,7 +193,17 @@ export default function SettingsPage() {
                   className="w-full font-black tracking-widest h-12 text-sm bg-primary hover:bg-primary/90 rounded-xl transition-all active:scale-95" 
                   disabled={isLinking}
                 >
-                  {isLinking ? "SAQLANMOQDA..." : "SAQLASH"}
+                  {isLinking
+                    ? lang === "uz"
+                      ? "SAQLANMOQDA..."
+                      : lang === "ru"
+                      ? "СОХРАНЕНИЕ..."
+                      : "SAVING..."
+                    : lang === "uz"
+                    ? "SAQLASH"
+                    : lang === "ru"
+                    ? "СОХРАНИТЬ"
+                    : "SAVE"}
                 </Button>
               </form>
             </Card>
@@ -188,17 +213,22 @@ export default function SettingsPage() {
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
                   <Mail className="h-5 w-5 text-blue-500" />
-                  Ijtimoiy Tarmoqlarni Ulash
+                  {lang === "uz" ? "Ijtimoiy Tarmoqlarni Ulash" : lang === "ru" ? "Привязка социальных сетей" : "Link Social Accounts"}
                 </CardTitle>
                 <CardDescription className="text-zinc-400 font-medium">
-                  Kirishni osonlashtirish uchun Google profilingizni bog'lang.
+                  {lang === "uz"
+                    ? "Kirishni osonlashtirish uchun Google profilingizni bog'lang."
+                    : lang === "ru"
+                    ? "Привяжите аккаунт Google для упрощения входа в систему."
+                    : "Link your Google profile to make login easier."}
                 </CardDescription>
               </CardHeader>
               <div className="space-y-4">
                 {isGoogleLinked ? (
                   <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm">
                     <span className="flex items-center gap-2">
-                      <Check className="h-4 w-4" /> Google ulandi
+                      <Check className="h-4 w-4" />
+                      {lang === "uz" ? "Google ulandi" : lang === "ru" ? "Google привязан" : "Google linked"}
                     </span>
                     <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{email}</span>
                   </div>
@@ -214,14 +244,13 @@ export default function SettingsPage() {
                       <path fill="#FBBC05" d="M5.5 14.7c-.2-.6-.3-1.3-.3-2.7s.1-2.1.3-2.7L1.6 6.3C.6 8.3 0 10.6 0 13s.6 4.7 1.6 6.7l3.9-3z"/>
                       <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.6-2-6.5-4.7l-3.9 3C3.4 20.3 7.3 23 12 23z"/>
                     </svg>
-                    Google akkauntini bog'lash
+                    {lang === "uz" ? "Google akkauntini bog'lash" : lang === "ru" ? "Привязать аккаунт Google" : "Link Google Account"}
                   </Button>
                 )}
               </div>
             </Card>
           </div>
 
-          {/* Right sidebar info */}
           <div className="md:col-span-5 space-y-6">
             <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden text-center flex flex-col items-center justify-center">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
@@ -249,8 +278,18 @@ export default function SettingsPage() {
                   <span className="text-white font-medium">{email}</span>
                 </div>
                 <div className="flex justify-between text-xs border-b border-white/5 pb-2">
-                  <span className="text-zinc-500 uppercase tracking-wider font-bold">Roli</span>
-                  <span className="text-primary font-black uppercase">{isAdmin ? "Admin" : "Foydalanuvchi"}</span>
+                  <span className="text-zinc-500 uppercase tracking-wider font-bold">
+                    {lang === "uz" ? "Roli" : lang === "ru" ? "Роль" : "Role"}
+                  </span>
+                  <span className="text-primary font-black uppercase">
+                    {isAdmin 
+                      ? "Admin" 
+                      : lang === "uz" 
+                      ? "Foydalanuvchi" 
+                      : lang === "ru" 
+                      ? "Пользователь" 
+                      : "User"}
+                  </span>
                 </div>
               </div>
 
@@ -267,7 +306,8 @@ export default function SettingsPage() {
                   onClick={handleLogout}
                   className="w-full bg-red-600/10 border border-red-500/20 hover:bg-red-600 text-red-500 hover:text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
                 >
-                  <LogOut className="size-4" /> Chiqish
+                  <LogOut className="size-4" />
+                  {lang === "uz" ? "Chiqish" : lang === "ru" ? "Выйти" : "Logout"}
                 </Button>
               </div>
             </Card>
