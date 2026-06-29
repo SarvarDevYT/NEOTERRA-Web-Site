@@ -1,14 +1,25 @@
-import Link from "next/link"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { MessageCircle, Mail, HelpCircle } from "lucide-react"
+"use client";
+
+import Link from "next/link";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { MessageCircle, Mail, HelpCircle } from "lucide-react";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function HelpPage() {
+  const { lang, t } = useTranslation();
+
   return (
     <main className="min-h-screen bg-background pt-32">
       <section className="container mx-auto px-4 py-20">
         <h1 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter mb-16 text-center liquid-shadow">
-          YORDAM <span className="text-primary">MARKAZI</span>
+          {lang === "uz" ? (
+            <>YORDAM <span className="text-primary">MARKAZI</span></>
+          ) : lang === "ru" ? (
+            <>ЦЕНТР <span className="text-primary">ПОМОЩИ</span></>
+          ) : (
+            <>SUPPORT <span className="text-primary">CENTER</span></>
+          )}
         </h1>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -18,7 +29,11 @@ export default function HelpPage() {
             </div>
             <h3 className="text-2xl font-black text-white mb-4 uppercase italic">Telegram</h3>
             <p className="text-white/60 mb-8 text-sm font-medium leading-relaxed">
-              Har qanday savollar bo'yicha bizning Telegram adminlarimizga murojaat qiling.
+              {lang === "uz"
+                ? "Har qanday savollar bo'yicha bizning Telegram adminlarimizga murojaat qiling."
+                : lang === "ru"
+                ? "По любым вопросам обращайтесь к нашим администраторам в Telegram."
+                : "For any questions or issues, please contact our Telegram administrators."}
             </p>
             <Button
               asChild
@@ -29,7 +44,7 @@ export default function HelpPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                BOG'LANISH
+                {lang === "uz" ? "BOG'LANISH" : lang === "ru" ? "СВЯЗАТЬСЯ" : "CONTACT US"}
               </a>
             </Button>
           </div>
@@ -40,13 +55,19 @@ export default function HelpPage() {
             </div>
             <h3 className="text-2xl font-black text-white mb-4 uppercase italic">Email</h3>
             <p className="text-white/60 mb-8 text-sm font-medium leading-relaxed">
-              Rasmiy takliflar va shikoyatlar uchun bizga email orqali yozing.
+              {lang === "uz"
+                ? "Rasmiy takliflar va shikoyatlar uchun bizga email orqali yozing."
+                : lang === "ru"
+                ? "Для официальных предложений и жалоб пишите нам на почту."
+                : "For official business inquiries and complaints, email us."}
             </p>
             <Button
               asChild
               className="w-full bg-primary text-white hover:bg-primary/80 font-black rounded-2xl py-6"
             >
-              <a href="mailto:neoterramc@gmail.com">XAT YOZISH</a>
+              <a href="mailto:neoterramc@gmail.com">
+                {lang === "uz" ? "XAT YOZISH" : lang === "ru" ? "НАПИСАТЬ" : "SEND EMAIL"}
+              </a>
             </Button>
           </div>
 
@@ -56,18 +77,24 @@ export default function HelpPage() {
             </div>
             <h3 className="text-2xl font-black text-white mb-4 uppercase italic">FAQ</h3>
             <p className="text-white/60 mb-8 text-sm font-medium leading-relaxed">
-              Ko'p beriladigan savollarga javoblarni toping.
+              {lang === "uz"
+                ? "Ko'p beriladigan savollarga javoblarni toping."
+                : lang === "ru"
+                ? "Найдите ответы на часто задаваемые вопросы."
+                : "Find answers to frequently asked questions."}
             </p>
             <Button
               asChild
               className="w-full bg-white/5 hover:bg-white/10 text-white font-black border border-white/10 rounded-2xl py-6"
             >
-              <Link href="https://neoterra-soon.netlify.app">O'QISH</Link>
+              <Link href="https://neoterra-soon.netlify.app">
+                {lang === "uz" ? "O'QISH" : lang === "ru" ? "ЧИТАТЬ" : "READ FAQ"}
+              </Link>
             </Button>
           </div>
         </div>
       </section>
       <Footer />
     </main>
-  )
+  );
 }

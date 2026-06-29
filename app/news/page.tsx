@@ -14,12 +14,16 @@ export default async function NewsPage() {
         .orderBy("createdAt", "desc")
         .get();
 
-      serializedNews = snapshot.docs.map((doc) => {
+       serializedNews = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           title: data.title || "",
+          title_ru: data.title_ru || "",
+          title_en: data.title_en || "",
           content: data.content || "",
+          content_ru: data.content_ru || "",
+          content_en: data.content_en || "",
           image: data.image || null,
           author: data.author || null,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
@@ -33,13 +37,7 @@ export default async function NewsPage() {
 
   return (
     <main className="min-h-screen bg-background pt-32">
-      <section className="container mx-auto px-4 py-20">
-        <h1 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter mb-16 text-center liquid-shadow">
-          YANGILIKLAR & <span className="text-primary">E'LONLAR</span>
-        </h1>
-
-        <NewsClient newsItems={serializedNews} />
-      </section>
+      <NewsClient newsItems={serializedNews} />
       <Footer />
     </main>
   );

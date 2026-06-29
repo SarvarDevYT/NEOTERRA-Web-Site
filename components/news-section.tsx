@@ -35,16 +35,5 @@ export async function NewsSection() {
 
   if (serializedNews.length === 0) return null;
 
-  return (
-    <section className="container mx-auto px-4 py-16">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
-          Yangiliklar
-        </h2>
-        <div className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent ml-8" />
-      </div>
-
-      <NewsSectionClient newsItems={serializedNews} />
-    </section>
-  );
+  return <NewsSectionClient newsItems={serializedNews} />;
 }

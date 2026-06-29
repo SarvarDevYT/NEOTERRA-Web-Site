@@ -28,7 +28,14 @@ export default function NewsSectionClient({ newsItems }: NewsSectionClientProps)
   const { lang, t } = useTranslation();
 
   return (
-    <>
+    <section className="container mx-auto px-4 py-16">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+          {lang === "uz" ? "Yangiliklar" : lang === "ru" ? "Новости" : "News"}
+        </h2>
+        <div className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent ml-8" />
+      </div>
+
       <div className="grid gap-6 md:grid-cols-3">
         {newsItems.map((item) => {
           const displayTitle = lang === "ru" && item.title_ru ? item.title_ru : (lang === "en" && item.title_en ? item.title_en : item.title);
@@ -69,7 +76,7 @@ export default function NewsSectionClient({ newsItems }: NewsSectionClientProps)
                   </div>
                   <button 
                     onClick={() => setSelectedNews(item)}
-                    className="flex items-center gap-1 text-xs font-bold text-primary hover:text-white transition-colors group/btn"
+                    className="flex items-center gap-1 text-xs font-bold text-primary hover:text-white transition-colors group/btn text-left"
                   >
                     {t("news", "readMore").toUpperCase()}
                     <ArrowRight className="h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
@@ -86,6 +93,6 @@ export default function NewsSectionClient({ newsItems }: NewsSectionClientProps)
         isOpen={!!selectedNews}
         onClose={() => setSelectedNews(null)}
       />
-    </>
+    </section>
   );
 }
