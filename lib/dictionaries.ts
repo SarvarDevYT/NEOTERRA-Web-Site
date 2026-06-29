@@ -84,7 +84,20 @@ export const dict = {
     social: {
       title: "IJTIMOIY TARMOQLARIMIZ",
       subtitle: "Bizning hamjamiyatimizga qo'shiling va so'nggi yangiliklardan boxabar bo'ling.",
-      join: "Qo'shilish"
+      join: "Qo'shilish",
+      subscribe: "OBUNA BO'LISH"
+    },
+    faq: {
+      title: "KO'P SO'RALADIGAN SAVOLLAR",
+      subtitle: "Server va uning faoliyati haqida eng ko'p so'raladigan savollarga javoblar.",
+      q1: "Serverga qanday ulanish mumkin?",
+      a1: "Minecraft-ni ishga tushiring, 'Ko'p o'yinchili o'yin' (Multiplayer) bo'limiga kiring, 'Server qo'shish' (Add Server) tugmasini bosing va IP manziliga play.neoterra.uz yoki mc.neoterra.uz deb yozing.",
+      q2: "Donat (mahsulot) sotib olganimdan so'ng u qachon beriladi?",
+      a2: "Odatda to'lov amalga oshirilgandan keyin 1-5 daqiqa ichida o'yin ichida avtomatik ravishda taqdim etiladi. Agar muammo yuzaga kelsa, yordam bo'limi orqali adminlarga yozing.",
+      q3: "Qanday qilib adminlar bilan bog'lanish mumkin?",
+      a3: "Bizning Telegram administratorimiz (@NeoTerraAdmin) yoki neoterramc@gmail.com elektron pochta manzili orqali bog'lanishingiz mumkin.",
+      q4: "Server qaysi versiyalarni qo'llab-quvvatlaydi?",
+      a4: "Serverimiz barcha o'yinchilar qulay ulanishi uchun 1.16.5 dan tortib eng so'nggi Minecraft versiyalarigacha qo'llab-quvvatlaydi."
     },
     footer: {
       disclaimer: "NeoTerra serveri Mojang AB bilan hech qanday aloqaga ega emas. Barcha huquqlar himoyalangan.",
@@ -186,7 +199,20 @@ export const dict = {
     social: {
       title: "НАШИ СОЦСЕТИ",
       subtitle: "Присоединяйтесь к нашему сообществу и следите за обновлениями.",
-      join: "Присоединиться"
+      join: "Присоединиться",
+      subscribe: "ПОДПИСАТЬСЯ"
+    },
+    faq: {
+      title: "ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ",
+      subtitle: "Ответы на самые популярные вопросы о сервере и его работе.",
+      q1: "Как подключиться к серверу?",
+      a1: "Запустите Minecraft, перейдите в раздел 'Мультиплеер' (Multiplayer), нажмите 'Добавить сервер' (Add Server) и в поле адреса введите play.neoterra.uz или mc.neoterra.uz.",
+      q2: "Когда выдается донат после покупки?",
+      a2: "Обычно донат выдается автоматически в игре в течение 1-5 минут после успешной оплаты. Если возникли вопросы, напишите администраторам через раздел поддержки.",
+      q3: "Как связаться с администрацией?",
+      a3: "Вы можете связаться с нами через нашего Telegram-администратора (@NeoTerraAdmin) или по электронной почте neoterramc@gmail.com.",
+      q4: "Какие версии поддерживает сервер?",
+      a4: "Наш сервер поддерживает версии от 1.16.5 до самых последних версий Minecraft для максимального удобства игроков."
     },
     footer: {
       disclaimer: "Сервер NeoTerra никак не связан с Mojang AB. Все права защищены.",
@@ -288,7 +314,20 @@ export const dict = {
     social: {
       title: "OUR SOCIAL MEDIA",
       subtitle: "Join our communities and follow the latest updates.",
-      join: "Join Now"
+      join: "Join Now",
+      subscribe: "SUBSCRIBE"
+    },
+    faq: {
+      title: "FREQUENTLY ASKED QUESTIONS",
+      subtitle: "Answers to the most common questions about the server and its operations.",
+      q1: "How to connect to the server?",
+      a1: "Launch Minecraft, go to 'Multiplayer', click 'Add Server', and enter play.neoterra.uz or mc.neoterra.uz in the server address field.",
+      q2: "When is the perk/donation delivered after purchase?",
+      a2: "Usually, perks are automatically delivered in-game within 1-5 minutes after successful payment. In case of any issues, contact admins via the support section.",
+      q3: "How to contact the administration?",
+      a3: "You can reach us via our Telegram administrator (@NeoTerraAdmin) or via email at neoterramc@gmail.com.",
+      q4: "Which versions does the server support?",
+      a4: "Our server supports Minecraft versions starting from 1.16.5 up to the very latest versions."
     },
     footer: {
       disclaimer: "NeoTerra server is not affiliated with Mojang AB. All rights reserved.",

@@ -1,8 +1,13 @@
+"use client";
+
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Instagram, Send, Youtube, Mail } from "lucide-react"
+import { useTranslation } from "@/hooks/use-translation"
 
 export default function SocialPage() {
+  const { t } = useTranslation();
+
   const socials = [
     { name: "Telegram", icon: <Send className="size-6" />, color: "bg-[#0088cc]", link: "https://t.me/NeoTerraUz" },
     { name: "Instagram", icon: <Instagram className="size-6" />, color: "bg-[#e4405f]", link: "https://neoterra-soon.netlify.app" },
@@ -14,15 +19,15 @@ export default function SocialPage() {
     <main className="min-h-screen bg-background pt-32">
       <section className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter mb-6 liquid-shadow">
-          BIZNING <span className="text-primary">IJTIMOIY TARMOQLAR</span>
+          {t("social", "title")}
         </h1>
         <p className="text-white/50 mb-16 max-w-2xl mx-auto font-medium">
-          Bizni kuzatib boring va yangiliklardan birinchi bo'lib xabardor bo'ling!
+          {t("social", "subtitle")}
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
           {socials.map((social) => (
-            <a key={social.name} href={social.link} className="block group">
+            <a key={social.name} href={social.link} className="block group" target="_blank" rel="noopener noreferrer">
               <div className="glass-effect p-12 rounded-[3rem] group-hover:bg-white/[0.08] group-hover:scale-[1.02] transition-all duration-700 flex flex-col items-center gap-8 overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div
@@ -34,7 +39,7 @@ export default function SocialPage() {
                   {social.name}
                 </h3>
                 <Button className="w-full bg-white text-black hover:bg-white/90 font-black rounded-2xl py-6 relative z-10 shadow-xl">
-                  OBUNA BO'LISH
+                  {t("social", "subscribe")}
                 </Button>
               </div>
             </a>

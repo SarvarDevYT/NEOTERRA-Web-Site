@@ -87,7 +87,7 @@ export default function HelpPage() {
               asChild
               className="w-full bg-white/5 hover:bg-white/10 text-white font-black border border-white/10 rounded-2xl py-6"
             >
-              <Link href="https://neoterra-soon.netlify.app">
+              <Link href="/faq">
                 {lang === "uz" ? "O'QISH" : lang === "ru" ? "ЧИТАТЬ" : "READ FAQ"}
               </Link>
             </Button>
