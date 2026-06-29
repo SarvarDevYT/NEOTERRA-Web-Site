@@ -5,6 +5,8 @@ export const dict = {
       news: "YANGILIKLAR",
       shop: "DO'KON",
       stats: "STATISTIKA",
+      staff: "JAMOA",
+      bans: "JAZOLAR",
       rules: "QOIDALAR",
       help: "YORDAM",
       social: "SOCIAL",
@@ -88,7 +90,15 @@ export const dict = {
       disclaimer: "NeoTerra serveri Mojang AB bilan hech qanday aloqaga ega emas. Barcha huquqlar himoyalangan.",
       links: "FOYDALI HAVOLALAR",
       serverStatus: "Server statusi",
-      rights: "Barcha huquqlar himoyalangan."
+      rights: "Barcha huquqlar himoyalangan.",
+      about: "O'zbekistondagi eng innovatsion Minecraft serveri. Biz bilan sarguzashtlaringizni boshlang!",
+      home: "Bosh sahifa",
+      shop: "Do'kon",
+      rules: "Qoidalar",
+      help: "Yordam",
+      social: "Ijtimoiy tarmoqlar",
+      connect: "Biz bilan ulaning",
+      notAffiliated: "Mojang AB bilan aloqador emas."
     }
   },
   ru: {
@@ -97,6 +107,8 @@ export const dict = {
       news: "НОВОСТИ",
       shop: "МАГАЗИН",
       stats: "СТАТИСТИКА",
+      staff: "КОМАНДА",
+      bans: "НАКАЗАНИЯ",
       rules: "ПРАВИЛА",
       help: "ПОМОЩЬ",
       social: "СОЦСЕТИ",
@@ -180,7 +192,15 @@ export const dict = {
       disclaimer: "Сервер NeoTerra никак не связан с Mojang AB. Все права защищены.",
       links: "ПОЛЕЗНЫЕ ССЫЛКИ",
       serverStatus: "Статус сервера",
-      rights: "Все права защищены."
+      rights: "Все права защищены.",
+      about: "Самый инновационный Minecraft сервер в Узбекистане. Начните свое приключение с нами!",
+      home: "Главная",
+      shop: "Магазин",
+      rules: "Правила",
+      help: "Помощь",
+      social: "Социальные сети",
+      connect: "Связаться с нами",
+      notAffiliated: "Не связано с Mojang AB."
     }
   },
   en: {
@@ -189,6 +209,8 @@ export const dict = {
       news: "NEWS",
       shop: "STORE",
       stats: "STATS",
+      staff: "TEAM",
+      bans: "PENALTIES",
       rules: "RULES",
       help: "HELP",
       social: "SOCIAL",
@@ -272,7 +294,15 @@ export const dict = {
       disclaimer: "NeoTerra server is not affiliated with Mojang AB. All rights reserved.",
       links: "USEFUL LINKS",
       serverStatus: "Server Status",
-      rights: "All rights reserved."
+      rights: "All rights reserved.",
+      about: "The most innovative Minecraft server in Uzbekistan. Start your adventure with us!",
+      home: "Home",
+      shop: "Store",
+      rules: "Rules",
+      help: "Help",
+      social: "Social networks",
+      connect: "Connect with us",
+      notAffiliated: "Not affiliated with Mojang AB."
     }
   }
 }
