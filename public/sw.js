@@ -4,7 +4,9 @@ const STATIC_ASSETS = [
   "/manifest.json",
   "/apple-icon.png",
   "/icon.svg",
+  "/offline.html",
 ];
+
 
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
@@ -62,7 +64,7 @@ self.addEventListener("fetch", (event) => {
           }
           // Return offline page for navigation requests
           if (event.request.mode === "navigate") {
-            return caches.match("/");
+            return caches.match("/offline.html");
           }
         });
       })

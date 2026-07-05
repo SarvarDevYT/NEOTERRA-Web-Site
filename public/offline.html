@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeoTerra - Offline</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #05070c 100%);
+      --accent-green: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .icon-wrapper {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pulse {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    .icon-svg {
+      width: 48px;
+      height: 48px;
+      color: var(--accent-green);
+      position: relative;
+      z-index: 2;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    /* Language Switcher */
+    .lang-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .lang-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-tab.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .lang-content {
+      display: none;
+    }
+
+    .lang-content.active {
+      display: block;
+    }
+
+    /* Button */
+    .retry-btn {
+      width: 100%;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--accent-green);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .retry-btn:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(16, 185, 129, 0.35);
+    }
+
+    .retry-btn:active {
+      transform: translateY(0);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        transform: scale(0.9);
+        opacity: 0.6;
+      }
+      50% {
+        transform: scale(1.15);
+        opacity: 1;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      }
+      100% {
+        transform: scale(0.9);
+        opacity: 0.6;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon-wrapper">
+      <div class="pulse"></div>
+      <!-- Lucide Wifi Off Icon equivalent -->
+      <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.5M5 12.5a10.94 10.94 0 0 1 5.83-2.84M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
+      </svg>
+    </div>
+
+    <!-- Language Selector Tabs -->
+    <div class="lang-tabs">
+      <button class="lang-tab active" onclick="switchLang('uz')">O'zbekcha</button>
+      <button class="lang-tab" onclick="switchLang('ru')">Русский</button>
+      <button class="lang-tab" onclick="switchLang('en')">English</button>
+    </div>
+
+    <!-- Uzbek Content -->
+    <div id="content-uz" class="lang-content active">
+      <h1>Tarmoqqa ulanish yo'q</h1>
+      <p>Siz internetga ulanmagansiz. Iltimos, qurilmangizning tarmoq ulanishini tekshirib ko'ring va sahifani qayta yuklang.</p>
+      <button class="retry-btn" onclick="retryConnection()">
+        Qayta urinish
+      </button>
+    </div>
+
+    <!-- Russian Content -->
+    <div id="content-ru" class="lang-content">
+      <h1>Нет подключения</h1>
+      <p>Вы не подключены к интернету. Пожалуйста, проверьте сетевое соединение вашего устройства и обновите страницу.</p>
+      <button class="retry-btn" onclick="retryConnection()">
+        Повторить попытку
+      </button>
+    </div>
+
+    <!-- English Content -->
+    <div id="content-en" class="lang-content">
+      <h1>No Internet Connection</h1>
+      <p>You are currently offline. Please check your network connection and try reloading the page again.</p>
+      <button class="retry-btn" onclick="retryConnection()">
+        Retry Connection
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function switchLang(lang) {
+      // Hide all content divs
+      document.querySelectorAll('.lang-content').forEach(el => {
+        el.classList.remove('active');
+      });
+      // Deactivate all buttons
+      document.querySelectorAll('.lang-tab').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // Show selected language
+      document.getElementById('content-' + lang).classList.add('active');
+      // Highlight button
+      const btnIndex = lang === 'uz' ? 0 : lang === 'ru' ? 1 : 2;
+      document.querySelectorAll('.lang-tab')[btnIndex].classList.add('active');
+    }
+
+    function retryConnection() {
+      if (navigator.onLine) {
+        window.location.href = "/";
+      } else {
+        // Simple shake animation on button to indicate still offline
+        const activeBtn = document.querySelector('.lang-content.active .retry-btn');
+        activeBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          activeBtn.style.transform = 'none';
+        }, 150);
+      }
+    }
+
+    // Try auto-detecting language from browser default
+    window.addEventListener('DOMContentLoaded', () => {
+      const userLang = navigator.language || navigator.userLanguage;
+      if (userLang.startsWith('ru')) {
+        switchLang('ru');
+      } else if (userLang.startsWith('uz')) {
+        switchLang('uz');
+      } else {
+        switchLang('en');
+      }
+    });
+
+    // Auto-reload if browser signals online
+    window.addEventListener('online', () => {
+      window.location.href = "/";
+    });
+  </script>
+</body>
+</html>

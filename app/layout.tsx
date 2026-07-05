@@ -5,6 +5,8 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { Navbar } from "@/components/navbar"
 import { ThemeProvider } from "@/components/theme-provider"
+import { OfflineDetector } from "@/components/offline-detector"
+
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://site.neoterra.uz"),
@@ -105,6 +107,7 @@ export default function RootLayout({
           <main>{children}</main>
           <Analytics />
           <Toaster />
+          <OfflineDetector />
         </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{
