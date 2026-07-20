@@ -9,8 +9,9 @@ import Image from "next/image"
 import { useAuth } from "@/hooks/use-auth"
 import { Input } from "@/components/ui/input"
 import { updateMinecraftUsername } from "@/app/actions/player-profile"
-import { getProductsAction } from "@/app/actions/products"
 import { ProductDialog } from "./product-dialog"
+import { createInpayPaymentAction } from "@/app/actions/inpay"
+
 
 import { useTranslation } from "@/hooks/use-translation"
 
@@ -44,6 +45,7 @@ export function ProductGrid() {
   const [paymentType, setPaymentType] = useState<"telegram" | "auto">("telegram")
   const { uid, minecraftUsername, setMinecraftUsername } = useAuth()
   const [customNick, setCustomNick] = useState("")
+  const [isPaying, setIsPaying] = useState(false)
   const { toast } = useToast()
   const { lang, t } = useTranslation()
 
@@ -164,6 +166,78 @@ export function ProductGrid() {
       }, 1500)
     })
   }
+
+  const handleAutoPayProceed = async () => {
+    if (!selectedProduct) return
+
+    if (!effectiveUsername.trim()) {
+      toast({
+        title: lang === "uz" ? "Nik kiriting!" : lang === "ru" ? "Введите ник!" : "Enter nickname!",
+        description: lang === "uz" ? "Minecraft nikingizni kiriting." : lang === "ru" ? "Введите ваш nik in Minecraft." : "Please enter your Minecraft nickname.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (selectedProduct.type === "token" && !tokenQuantity) {
+      toast({
+        title: lang === "uz" ? "Miqdor kiriting!" : lang === "ru" ? "Введите количество!" : "Enter amount!",
+        description: lang === "uz" ? "Token miqdorini belgilang." : lang === "ru" ? "Укажите количество токенов." : "Please specify the token amount.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Auto-link custom nickname to profile in Firebase if not already linked
+    if (uid && !minecraftUsername && customNick.trim()) {
+      try {
+        await updateMinecraftUsername(uid, customNick)
+        setMinecraftUsername(customNick.trim())
+      } catch (error) {
+        console.error("Auto linking failed", error)
+      }
+    }
+
+    let amount = 0
+    let rawPrice = selectedProduct.price
+    if (selectedProduct.type === "token") {
+      const pricePerToken = parseInt(rawPrice.replace(/[^0-9]/g, "")) || 50
+      const qty = parseInt(tokenQuantity) || 1
+      amount = pricePerToken * qty
+    } else {
+      amount = parseInt(rawPrice.replace(/[^0-9]/g, "")) || 1000
+    }
+
+    setIsPaying(true)
+    try {
+      const result = await createInpayPaymentAction(
+        selectedProduct.id,
+        effectiveUsername,
+        amount,
+        selectedProduct.type === "token" ? tokenQuantity : undefined
+      )
+
+      if (result.success && result.payUrl) {
+        window.location.href = result.payUrl
+      } else {
+        toast({
+          title: lang === "uz" ? "Xatolik yuz berdi" : lang === "ru" ? "Произошла ошибка" : "Error occurred",
+          description: result.message || "To'lov havolasini olishda xatolik yuz berdi.",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      console.error("Payment action call failed", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create payment.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsPaying(false)
+    }
+  }
+
 
   return (
     <section className="container mx-auto px-4 py-20">
@@ -399,24 +473,62 @@ export function ProductGrid() {
 
           {selectedProduct && paymentType === "auto" && (
             <div className="flex flex-col gap-4 mt-2">
-              <div className="glass-effect p-6 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center py-10 gap-4">
-                <AlertCircle className="size-12 text-primary animate-pulse" />
-                <h4 className="text-xl font-bold text-white">
-                  {lang === "uz" ? "TEZ KUNDA..." : lang === "ru" ? "СКОРО..." : "COMING SOON..."}
-                </h4>
-                <p className="text-white/60 text-sm">
-                  {lang === "uz"
-                    ? "Click va Payme orqali avtomatik to'lov tizimi ishlab chiqilmoqda. Hozircha \"Telegram\" usulidan foydalaning."
-                    : lang === "ru"
-                    ? "Автоматическая платежная система через Click и Payme находится в разработке. Пожалуйста, используйте метод \"Telegram\"."
-                    : "Automatic payment system via Click and Payme is under development. Please use the \"Telegram\" option for now."
-                  }
-                </p>
-                <div className="flex gap-4 mt-4 opacity-50">
-                  <div className="bg-[#00a1ea] px-4 py-2 rounded-md text-white font-bold tracking-widest">CLICK</div>
-                  <div className="bg-[#33cccc] px-4 py-2 rounded-md text-white font-bold tracking-widest">PAYME</div>
+              {!minecraftUsername && (
+                <div className="bg-zinc-950/40 p-4 rounded-lg border border-white/10">
+                  <label className="text-white text-xs mb-2 block font-black uppercase tracking-wider">{t("shop", "enterNickname")}:</label>
+                  <Input
+                    type="text"
+                    value={customNick}
+                    onChange={(e) => setCustomNick(e.target.value)}
+                    placeholder={t("shop", "nicknamePlaceholder")}
+                    className="w-full bg-black/30 text-white border-white/10 rounded-lg"
+                  />
+                  <span className="text-[10px] text-zinc-500 mt-1 block">
+                    {lang === "uz"
+                      ? "Bu nik avtomatik tarzda profil sozlamalaringizga saqlanadi."
+                      : lang === "ru"
+                      ? "Этот ник будет автоматически сохранен в настройках вашего профиля."
+                      : "This nickname will be automatically saved in your profile settings."
+                    }
+                  </span>
                 </div>
-              </div>
+              )}
+
+              {selectedProduct.type === "token" && (
+                <div className="bg-zinc-950/40 p-4 rounded-lg border border-white/10">
+                  <label className="text-white text-xs mb-2 block font-black uppercase tracking-wider">
+                    {lang === "uz" ? "Token miqdorini kiriting:" : lang === "ru" ? "Введите количество токенов:" : "Enter token quantity:"}
+                  </label>
+                  <input
+                    type="number"
+                    value={tokenQuantity}
+                    onChange={(e) => setTokenQuantity(e.target.value)}
+                    placeholder="Masalan: 1000"
+                    className="w-full bg-black/30 text-white border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-primary/60"
+                  />
+                </div>
+              )}
+
+              <Button
+                onClick={handleAutoPayProceed}
+                disabled={isPaying}
+                className="w-full bg-primary hover:bg-primary/80 text-white font-bold py-6 flex items-center justify-center gap-2"
+              >
+                {isPaying ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    {lang === "uz" ? "TO'LOV YARATILMOQDA..." : lang === "ru" ? "СОЗДАНИЕ ПЛАТЕЖА..." : "GENERATING PAYMENT..."}
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="size-5" />
+                    {lang === "uz" ? "TO'LOV QILISH" : lang === "ru" ? "ОПЛАТИТЬ" : "PAY NOW"}
+                  </>
+                )}
+              </Button>
             </div>
           )}
         </DialogContent>
