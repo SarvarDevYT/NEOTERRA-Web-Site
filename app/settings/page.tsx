@@ -60,13 +60,13 @@ export default function SettingsPage() {
 
     setIsTopupLoading(true);
     try {
-      const username = minecraftUsername || email?.split("@")[0] || uid;
+      const username = minecraftUsername || email?.split("@")[0] || uid || "";
       const result = await createInpayPaymentAction(
         "balance_topup",
         username,
         amountNum,
         undefined,
-        uid
+        uid || undefined
       );
 
       if (result.success && result.payUrl) {
