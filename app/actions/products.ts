@@ -20,6 +20,7 @@ export async function getProductsAction() {
         type: data.type || "rank",
         image: data.image || "",
         order: data.order || 0,
+        command: data.command || "",
         description: data.description || "",
         description_ru: data.description_ru || "",
         description_en: data.description_en || "",
@@ -43,6 +44,7 @@ export async function createProductAction(formData: FormData) {
   // Accept both 'imageUrl' (from ImageUploader) and legacy 'image' field
   const image = String(formData.get("imageUrl") ?? formData.get("image") ?? "").trim();
   const order = parseInt(formData.get("order") as string) || 0;
+  const command = String(formData.get("command") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const description_ru = String(formData.get("description_ru") ?? "").trim();
   const description_en = String(formData.get("description_en") ?? "").trim();
@@ -61,6 +63,7 @@ export async function createProductAction(formData: FormData) {
       type,
       image,
       order,
+      command,
       description,
       description_ru,
       description_en,
@@ -103,6 +106,7 @@ export async function updateProductAction(id: string, formData: FormData) {
   // Accept both 'imageUrl' (from ImageUploader) and legacy 'image' field
   const image = String(formData.get("imageUrl") ?? formData.get("image") ?? "").trim();
   const order = parseInt(formData.get("order") as string) || 0;
+  const command = String(formData.get("command") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const description_ru = String(formData.get("description_ru") ?? "").trim();
   const description_en = String(formData.get("description_en") ?? "").trim();
@@ -121,6 +125,7 @@ export async function updateProductAction(id: string, formData: FormData) {
       type,
       image,
       order,
+      command,
       description,
       description_ru,
       description_en,

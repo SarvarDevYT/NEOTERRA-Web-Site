@@ -4,15 +4,17 @@ import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 
 function generateMinecraftCommands(product: any, username: string, qty: string = "1"): string[] {
-  // If product has custom commands defined in the DB, use them
-  if (product.commands && Array.isArray(product.commands) && product.commands.length > 0) {
-    return product.commands.map((cmd: string) =>
+  // If product has a custom command defined by admin, use it
+  if (product.command && typeof product.command === "string" && product.command.trim()) {
+    const lines = product.command.split("\n").map((l: string) => l.trim()).filter((l: string) => l.length > 0)
+    return lines.map((cmd: string) =>
       cmd.replace(/{username}/g, username)
          .replace(/{qty}/g, qty)
          .replace(/{product}/g, product.id)
     )
   }
 
+  // Legacy fallback: if no command field, guess based on category
   const category = (product.category || "").toUpperCase()
   const pId = product.id.toLowerCase()
 
@@ -90,7 +92,7 @@ export async function purchaseProductWithBalanceAction(
       })
 
       // 7. Write to command_queue
-      const queueRef = adminDb.collection("commands_queue")
+      const queueRef = adminDb!.collection("commands_queue")
       for (const cmd of commands) {
         const commandDocRef = queueRef.doc()
         transaction.set(commandDocRef, {

@@ -12,7 +12,7 @@ import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-pr
 import { purchaseProductWithBalanceAction } from "@/app/actions/shop-actions"
 import { ProductDialog } from "./product-dialog"
 import { createInpayPaymentAction } from "@/app/actions/inpay"
-
+import { getProductsAction } from "@/app/actions/products"
 
 
 import { useTranslation } from "@/hooks/use-translation"

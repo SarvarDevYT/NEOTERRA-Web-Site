@@ -39,6 +39,7 @@ interface Product {
   description?: string;
   description_ru?: string;
   description_en?: string;
+  command?: string;
 }
 
 const CATEGORIES = ["RANKLAR", "KEYS-LAR", "VALYUTA", "UNBAN/UNMUTE"];
@@ -281,6 +282,17 @@ export default function AdminShopPage() {
               />
               <p className="text-[9px] text-zinc-600 ml-1 -mt-1">Tayyor rasmlar: /images/[light-blue, pink, red, yellow, blue, green, orange, donate-case, kit-case].jpg</p>
 
+              <div className="space-y-2">
+                <Label htmlFor="command" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Minecraft Buyruq (Server Konsolida)</Label>
+                <textarea
+                  id="command"
+                  name="command"
+                  placeholder="Masalan: lp user {username} parent add vip&#10;&#10;{username} — sotib olgan o'yinchining niki bilan almashtiriladi"
+                  className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none font-mono"
+                />
+                <p className="text-[9px] text-zinc-600 ml-1">Bir nechta buyruq bo'lsa har birini yangi qatordan yozing. {'{username}'} — o'yinchi nikidir.</p>
+              </div>
+
               <DialogFooter className="pt-4">
                 <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95">
                   {isSubmitLoading ? "QO'SHILMOQDA..." : "DONATNI QO'SHISH"}
@@ -425,6 +437,17 @@ export default function AdminShopPage() {
                   placeholder="Write perks line-by-line..."
                   className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold p-3 text-sm focus:outline-none"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Minecraft Buyruq (Server Konsolida)</Label>
+                <textarea
+                  name="command"
+                  defaultValue={editingProduct.command || ""}
+                  placeholder="Masalan: lp user {username} parent add vip"
+                  className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold p-3 text-sm focus:outline-none font-mono"
+                />
+                <p className="text-[9px] text-zinc-600 ml-1">Bir nechta buyruq bo'lsa har birini yangi qatordan yozing. {'{username}'} — o'yinchi nikidir.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
