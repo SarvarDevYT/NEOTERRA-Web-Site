@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Newspaper, Gavel, Users, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Newspaper, Gavel, Users, Activity, Bot } from "lucide-react";
+import { setTelegramWebhookAction } from "@/app/actions/telegram";
 
 interface ServerData {
   online: boolean;
@@ -17,6 +19,8 @@ export default function AdminDashboardPage() {
   const [rulesCount, setRulesCount] = useState<number | string>("...");
   const [authCount, setAuthCount] = useState<number | string>("...");
   const [serverStatus, setServerStatus] = useState<ServerData | null>(null);
+  const [webhookStatus, setWebhookStatus] = useState<string | null>(null);
+  const [isSettingWebhook, setIsSettingWebhook] = useState(false);
 
   useEffect(() => {
     // Counts fetching
@@ -88,6 +92,43 @@ export default function AdminDashboardPage() {
         <p className="text-zinc-400">
           Xush kelibsiz, Admin! Chap tarafdagi menyu orqali yangiliklar va qoidalarni boshqarishingiz mumkin.
         </p>
+      </div>
+
+      {/* Telegram Bot Webhook Setup */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-[#229ED9]/10">
+            <Bot className="h-5 w-5 text-[#229ED9]" />
+          </div>
+          <div>
+            <h3 className="text-white font-bold">Telegram Bot Webhook</h3>
+            <p className="text-xs text-zinc-500">Bot webhookini sayt manziliga sozlash</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={async () => {
+              setIsSettingWebhook(true)
+              setWebhookStatus(null)
+              try {
+                const result = await setTelegramWebhookAction()
+                setWebhookStatus(result.success ? `✅ ${result.message}` : `❌ ${result.message}`)
+              } catch (err: any) {
+                setWebhookStatus(`❌ ${err.message}`)
+              } finally {
+                setIsSettingWebhook(false)
+              }
+            }}
+            disabled={isSettingWebhook}
+            className="bg-[#229ED9] hover:bg-[#1a8abf] text-white font-bold h-10 px-6 rounded-lg flex items-center gap-2"
+          >
+            <Bot className="h-4 w-4" />
+            {isSettingWebhook ? "Sozlanmoqda..." : "Webhookni Sozlash"}
+          </Button>
+          {webhookStatus && (
+            <span className="text-xs text-zinc-400 font-medium">{webhookStatus}</span>
+          )}
+        </div>
       </div>
     </div>
   );
