@@ -50,7 +50,8 @@ export async function createInpayPaymentAction(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        user_id: parseInt(userId),
+        merchant_id: merchantId,
+        token: merchantToken,
         amount: amount,
         description: description,
         callback_url: callbackUrl,
