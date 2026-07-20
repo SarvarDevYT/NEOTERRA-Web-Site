@@ -242,33 +242,6 @@ export function Navbar() {
                     </span>
                     <span className="text-white/40 normal-case font-medium">{email}</span>
                   </DropdownMenuLabel>
-                  
-                  <div className="px-2 py-4 flex flex-col items-center justify-center bg-zinc-950/40 rounded-xl mb-2 border border-white/5 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-primary/5 blur-xl -z-10 group-hover:bg-primary/10 transition-colors" />
-                    {minecraftUsername ? (
-                      <>
-                        <img 
-                          src={`https://mc-heads.net/body/${minecraftUsername}/100`} 
-                          alt={minecraftUsername}
-                          className="h-32 w-auto drop-shadow-[0_0_20px_rgba(168,85,247,0.3)] group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="mt-2 text-xs font-black text-white italic tracking-tighter uppercase">{minecraftUsername}</div>
-                      </>
-                    ) : (
-                      <div className="text-center py-4">
-                        <span className="text-xs text-zinc-500 font-bold block mb-2">
-                          {lang === "uz" ? "Minecraft nik bog'lanmagan" : lang === "ru" ? "Никнейм Minecraft не привязан" : "Minecraft nickname not linked"}
-                        </span>
-                        <Button 
-                          onClick={() => setIsLinkDialogOpen(true)}
-                          className="text-[10px] font-bold tracking-wider uppercase h-8 px-4 rounded-full bg-primary hover:bg-primary/90"
-                        >
-                          {lang === "uz" ? "Bog'lash" : lang === "ru" ? "Привязать" : "Link Nickname"}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  
                   <DropdownMenuSeparator className="bg-primary/10" />
                   
                   <Link href="/settings">

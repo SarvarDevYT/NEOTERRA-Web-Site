@@ -7,14 +7,14 @@ export async function createInpayPaymentAction(
   productId: string,
   username: string,
   amount: number,
-  tokenQty?: string
+  tokenQty?: string,
+  userUid?: string
 ) {
   if (!adminDb) {
     return { success: false, message: "Firebase is not configured!" }
   }
 
   const merchantId = process.env.INPAY_MERCHANT_ID
-  const userId = process.env.INPAY_USER_ID || merchantId
   const merchantToken = process.env.INPAY_MERCHANT_TOKEN
 
   if (!merchantId || !merchantToken) {
@@ -37,7 +37,9 @@ export async function createInpayPaymentAction(
     const paymentRef = adminDb.collection("payments").doc()
     const localOrderId = paymentRef.id
 
-    const description = `Minecraft: ${productId} for ${username}${tokenQty ? ` (Qty: ${tokenQty})` : ""}`
+    const description = productId === "balance_topup"
+      ? `NeoTerra Balans To'ldirish: ${username}`
+      : `Minecraft: ${productId} for ${username}${tokenQty ? ` (Qty: ${tokenQty})` : ""}`
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://site.neoterra.uz"
     const callbackUrl = `${baseUrl}/api/payment/inpay-webhook`
 
@@ -74,6 +76,7 @@ export async function createInpayPaymentAction(
       username: username,
       amount: amount,
       tokenQty: tokenQty || null,
+      userUid: userUid || null,
       status: "pending",
       description: description,
       payUrl: createData.pay_url,

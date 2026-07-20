@@ -14,7 +14,8 @@ import {
 } from "firebase/auth";
 import { auth as firebaseClientAuth } from "@/lib/firebase";
 import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-profile";
-import { Shield, Key, Mail, User, LogOut, Check } from "lucide-react";
+import { createInpayPaymentAction } from "@/app/actions/inpay";
+import { Shield, Key, Mail, User, LogOut, Check, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 import { useTranslation } from "@/hooks/use-translation";
@@ -28,6 +29,65 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { lang } = useTranslation();
+
+  const [profile, setProfile] = useState<any>(null);
+  const [topupAmount, setTopupAmount] = useState("");
+  const [isTopupLoading, setIsTopupLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (uid) {
+        const data = await getUserProfile(uid, email);
+        if (data) {
+          setProfile(data);
+        }
+      }
+    }
+    loadProfile();
+  }, [uid, email]);
+
+  const handleTopup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amountNum = parseInt(topupAmount);
+    if (isNaN(amountNum) || amountNum < 1000) {
+      toast({
+        title: lang === "uz" ? "Xatolik" : lang === "ru" ? "Ошибка" : "Error",
+        description: lang === "uz" ? "Minimal to'lov miqdori 1000 UZS" : lang === "ru" ? "Минимальная сумма 1000 UZS" : "Minimum deposit amount is 1000 UZS",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsTopupLoading(true);
+    try {
+      const username = minecraftUsername || email?.split("@")[0] || uid;
+      const result = await createInpayPaymentAction(
+        "balance_topup",
+        username,
+        amountNum,
+        undefined,
+        uid
+      );
+
+      if (result.success && result.payUrl) {
+        window.location.href = result.payUrl;
+      } else {
+        toast({
+          title: lang === "uz" ? "To'lov xatosi" : lang === "ru" ? "Ошибка платежа" : "Payment error",
+          description: result.message || "To'lov havolasini olish imkoni bo'lmadi.",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to create payment.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTopupLoading(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseClientAuth, (user) => {
@@ -252,30 +312,55 @@ export default function SettingsPage() {
           </div>
 
           <div className="md:col-span-5 space-y-6">
-            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden text-center flex flex-col items-center justify-center">
+            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-              <div className="px-2 py-4 flex flex-col items-center justify-center bg-zinc-950/40 rounded-xl mb-4 border border-white/5 relative overflow-hidden group w-full">
-                <div className="absolute inset-0 bg-primary/5 blur-xl -z-10 group-hover:bg-primary/10 transition-colors" />
-                {minecraftUsername ? (
-                  <>
-                    <img 
-                      src={`https://mc-heads.net/body/${minecraftUsername}/100`} 
-                      alt={minecraftUsername}
-                      className="h-32 w-auto drop-shadow-[0_0_20px_rgba(168,85,247,0.3)] group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="mt-2 text-xs font-black text-white italic tracking-tighter uppercase">{minecraftUsername}</div>
-                  </>
-                ) : (
-                  <div className="text-center py-4 text-zinc-500 font-bold uppercase tracking-wider text-xs">
-                    Minecraft Skin
-                  </div>
-                )}
+              
+              <div className="text-center py-6 bg-zinc-950/40 rounded-2xl mb-6 border border-white/5 relative overflow-hidden">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">
+                  {lang === "uz" ? "Sizning Balansingiz" : lang === "ru" ? "Ваш Баланс" : "Your Balance"}
+                </div>
+                <div className="text-3xl font-black text-white italic tracking-tight">
+                  {profile ? Number(profile.balance || 0).toLocaleString() : "0"} <span className="text-primary text-lg">UZS</span>
+                </div>
               </div>
+
+              {/* Top Up Form */}
+              <form onSubmit={handleTopup} className="space-y-4 mb-6 pb-6 border-b border-white/5">
+                <div className="space-y-2">
+                  <label htmlFor="topup" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
+                    {lang === "uz" ? "Summani kiriting (UZS)" : lang === "ru" ? "Введите сумму (UZS)" : "Enter amount (UZS)"}
+                  </label>
+                  <Input
+                    id="topup"
+                    type="number"
+                    placeholder="Masalan: 10000"
+                    value={topupAmount}
+                    onChange={(e) => setTopupAmount(e.target.value)}
+                    className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    required
+                    disabled={isTopupLoading}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full font-black tracking-widest h-12 text-sm bg-primary hover:bg-primary/90 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                  disabled={isTopupLoading}
+                >
+                  <CreditCard className="size-4" />
+                  {isTopupLoading 
+                    ? (lang === "uz" ? "TO'LDIRILMOQDA..." : lang === "ru" ? "ПОПОЛНЕНИЕ..." : "DEPOSITING...")
+                    : (lang === "uz" ? "BALANSNI TO'LDIRISH" : lang === "ru" ? "ПОПОЛНИТЬ БАЛАНС" : "TOP UP BALANCE")}
+                </Button>
+              </form>
               
               <div className="w-full text-left space-y-2 mb-6">
+                <div className="flex justify-between items-center text-xs border-b border-white/5 pb-2">
+                  <span className="text-zinc-500 uppercase tracking-wider font-bold">ID (Donat ID)</span>
+                  <span className="text-white font-mono select-all bg-black/40 px-2 py-0.5 rounded border border-white/5 truncate max-w-[150px]">{uid}</span>
+                </div>
                 <div className="flex justify-between text-xs border-b border-white/5 pb-2">
                   <span className="text-zinc-500 uppercase tracking-wider font-bold">Email</span>
-                  <span className="text-white font-medium">{email}</span>
+                  <span className="text-white font-medium truncate max-w-[150px]">{email}</span>
                 </div>
                 <div className="flex justify-between text-xs border-b border-white/5 pb-2">
                   <span className="text-zinc-500 uppercase tracking-wider font-bold">

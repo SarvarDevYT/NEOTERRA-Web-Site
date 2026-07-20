@@ -45,6 +45,7 @@ export async function getUserProfile(uid: string, email?: string | null) {
         email: data.email || null,
         role: data.role || "user",
         minecraftUsername: data.minecraftUsername || null,
+        balance: data.balance !== undefined ? Number(data.balance) : 0,
         createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
         updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
       }
@@ -55,6 +56,7 @@ export async function getUserProfile(uid: string, email?: string | null) {
       email: email || null,
       role: "user",
       minecraftUsername: null,
+      balance: 0,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     })
@@ -64,6 +66,7 @@ export async function getUserProfile(uid: string, email?: string | null) {
       email: email || null,
       role: "user",
       minecraftUsername: null,
+      balance: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }

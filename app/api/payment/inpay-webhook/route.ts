@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
+import { FieldValue } from "firebase-admin/firestore"
+
+export async function GET() {
+  return NextResponse.json({ 
+    status: "active", 
+    message: "NeoTerra inPAY Webhook Handler. Send a POST request with payload to verify payments." 
+  })
+}
 
 export async function POST(request: Request) {
   try {
@@ -70,17 +78,35 @@ export async function POST(request: Request) {
         updatedAt: new Date(),
       })
 
+      // If it is a balance topup, increment the user's balance
+      if (paymentData.productId === "balance_topup" && paymentData.userUid) {
+        const userRef = adminDb.collection("users").doc(paymentData.userUid)
+        await userRef.update({
+          balance: FieldValue.increment(paymentData.amount),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+      }
+
       // 5. Send Telegram Bot notification if credentials are provided
       const botToken = process.env.TELEGRAM_BOT_TOKEN
       const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
 
       if (botToken && adminChatId) {
-        const messageText = `✅ <b>Yangi To'lov Qabul Qilindi! (inPAY)</b>\n\n` +
-          `👤 <b>O'yinchi:</b> <code>${paymentData.username}</code>\n` +
-          `📦 <b>Mahsulot:</b> <code>${paymentData.productId}</code>\n` +
-          `💰 <b>Summa:</b> <code>${parseFloat(amount).toLocaleString()} UZS</code>\n` +
-          `🆔 <b>Order:</b> <code>${order_id}</code>\n` +
-          `📝 <b>Izoh:</b> <code>${description || paymentData.description}</code>`
+        let messageText = ""
+        if (paymentData.productId === "balance_topup") {
+          messageText = `💰 <b>Balans To'ldirildi! (inPAY)</b>\n\n` +
+            `👤 <b>Foydalanuvchi:</b> <code>${paymentData.username}</code>\n` +
+            `🆔 <b>Foydalanuvchi ID:</b> <code>${paymentData.userUid}</code>\n` +
+            `💰 <b>Summa:</b> <code>${parseFloat(amount).toLocaleString()} UZS</code>\n` +
+            `🆔 <b>Order:</b> <code>${order_id}</code>`
+        } else {
+          messageText = `✅ <b>Yangi To'lov Qabul Qilindi! (inPAY)</b>\n\n` +
+            `👤 <b>O'yinchi:</b> <code>${paymentData.username}</code>\n` +
+            `📦 <b>Mahsulot:</b> <code>${paymentData.productId}</code>\n` +
+            `💰 <b>Summa:</b> <code>${parseFloat(amount).toLocaleString()} UZS</code>\n` +
+            `🆔 <b>Order:</b> <code>${order_id}</code>\n` +
+            `📝 <b>Izoh:</b> <code>${description || paymentData.description}</code>`
+        }
 
         const tgUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
         try {

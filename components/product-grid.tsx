@@ -8,9 +8,11 @@ import { Copy, Check, ExternalLink, CreditCard, AlertCircle } from "lucide-react
 import Image from "next/image"
 import { useAuth } from "@/hooks/use-auth"
 import { Input } from "@/components/ui/input"
-import { updateMinecraftUsername } from "@/app/actions/player-profile"
+import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-profile"
+import { purchaseProductWithBalanceAction } from "@/app/actions/shop-actions"
 import { ProductDialog } from "./product-dialog"
 import { createInpayPaymentAction } from "@/app/actions/inpay"
+
 
 
 import { useTranslation } from "@/hooks/use-translation"
@@ -46,6 +48,7 @@ export function ProductGrid() {
   const { uid, minecraftUsername, setMinecraftUsername } = useAuth()
   const [customNick, setCustomNick] = useState("")
   const [isPaying, setIsPaying] = useState(false)
+  const [balance, setBalance] = useState<number | null>(null)
   const { toast } = useToast()
   const { lang, t } = useTranslation()
 
@@ -57,6 +60,18 @@ export function ProductGrid() {
     }
     loadProducts();
   }, []);
+
+  useEffect(() => {
+    async function loadBalance() {
+      if (uid && isPurchaseDialogOpen) {
+        const profile = await getUserProfile(uid)
+        if (profile) {
+          setBalance(profile.balance || 0)
+        }
+      }
+    }
+    loadBalance()
+  }, [uid, isPurchaseDialogOpen])
 
   const filteredProducts = products.filter((p) => p.category === activeCategory)
   const effectiveUsername = minecraftUsername || customNick
@@ -168,7 +183,7 @@ export function ProductGrid() {
   }
 
   const handleAutoPayProceed = async () => {
-    if (!selectedProduct) return
+    if (!selectedProduct || !uid) return
 
     if (!effectiveUsername.trim()) {
       toast({
@@ -208,29 +223,46 @@ export function ProductGrid() {
       amount = parseInt(rawPrice.replace(/[^0-9]/g, "")) || 1000
     }
 
+    if (balance === null || balance < amount) {
+      toast({
+        title: lang === "uz" ? "Mablag' yetarli emas!" : lang === "ru" ? "Недостаточно средств!" : "Insufficient funds!",
+        description: lang === "uz" ? "Balansingizda yetarli mablag' yo'q. Iltimos, balansni to'ldiring." : lang === "ru" ? "Недостаточно средств на балансе. Пожалуйста, пополните баланс." : "Insufficient balance. Please top up your balance.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsPaying(true)
     try {
-      const result = await createInpayPaymentAction(
+      const result = await purchaseProductWithBalanceAction(
         selectedProduct.id,
+        uid,
         effectiveUsername,
-        amount,
         selectedProduct.type === "token" ? tokenQuantity : undefined
       )
 
-      if (result.success && result.payUrl) {
-        window.location.href = result.payUrl
+      if (result.success) {
+        toast({
+          title: lang === "uz" ? "Muvaffaqiyatli xarid!" : lang === "ru" ? "Успешная покупка!" : "Successful purchase!",
+          description: lang === "uz" ? "Mahsulot muvaffaqiyatli sotib olindi!" : lang === "ru" ? "Товар успешно куплен!" : "Product purchased successfully!",
+        })
+        setBalance(prev => prev !== null ? prev - amount : null)
+        setTimeout(() => {
+          setIsPurchaseDialogOpen(false)
+          setTokenQuantity("")
+        }, 1500)
       } else {
         toast({
           title: lang === "uz" ? "Xatolik yuz berdi" : lang === "ru" ? "Произошла ошибка" : "Error occurred",
-          description: result.message || "To'lov havolasini olishda xatolik yuz berdi.",
+          description: result.message || "Xaridni amalga oshirishda xatolik yuz berdi.",
           variant: "destructive",
         })
       }
     } catch (error: any) {
-      console.error("Payment action call failed", error)
+      console.error("Purchase action call failed", error)
       toast({
         title: "Error",
-        description: error.message || "Failed to create payment.",
+        description: error.message || "Failed to make purchase.",
         variant: "destructive",
       })
     } finally {
@@ -473,6 +505,15 @@ export function ProductGrid() {
 
           {selectedProduct && paymentType === "auto" && (
             <div className="flex flex-col gap-4 mt-2">
+              <div className="bg-zinc-950/40 p-4 rounded-lg border border-white/10 text-center">
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest block mb-1">
+                  {lang === "uz" ? "Sizning Balansingiz" : lang === "ru" ? "Ваш Баланс" : "Your Balance"}
+                </span>
+                <span className="text-xl font-bold text-white">
+                  {balance !== null ? balance.toLocaleString() : "..."} <span className="text-primary text-sm">UZS</span>
+                </span>
+              </div>
+
               {!minecraftUsername && (
                 <div className="bg-zinc-950/40 p-4 rounded-lg border border-white/10">
                   <label className="text-white text-xs mb-2 block font-black uppercase tracking-wider">{t("shop", "enterNickname")}:</label>
@@ -509,26 +550,63 @@ export function ProductGrid() {
                 </div>
               )}
 
-              <Button
-                onClick={handleAutoPayProceed}
-                disabled={isPaying}
-                className="w-full bg-primary hover:bg-primary/80 text-white font-bold py-6 flex items-center justify-center gap-2"
-              >
-                {isPaying ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    {lang === "uz" ? "TO'LOV YARATILMOQDA..." : lang === "ru" ? "СОЗДАНИЕ ПЛАТЕЖА..." : "GENERATING PAYMENT..."}
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="size-5" />
-                    {lang === "uz" ? "TO'LOV QILISH" : lang === "ru" ? "ОПЛАТИТЬ" : "PAY NOW"}
-                  </>
-                )}
-              </Button>
+              {(() => {
+                let amount = 0
+                let rawPrice = selectedProduct.price
+                if (selectedProduct.type === "token") {
+                  const pricePerToken = parseInt(rawPrice.replace(/[^0-9]/g, "")) || 50
+                  const qty = parseInt(tokenQuantity) || 1
+                  amount = pricePerToken * qty
+                } else {
+                  amount = parseInt(rawPrice.replace(/[^0-9]/g, "")) || 1000
+                }
+
+                const hasEnoughBalance = balance !== null && balance >= amount
+
+                if (!hasEnoughBalance) {
+                  return (
+                    <div className="flex flex-col gap-2">
+                      <div className="text-xs text-red-400 font-bold bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-center">
+                        {lang === "uz" 
+                          ? "Balansingizda yetarli mablag' mavjud emas! Iltimos, sozlamalar sahifasidan balansni to'ldiring." 
+                          : lang === "ru" 
+                          ? "Недостаточно средств на балансе! Пожалуйста, пополните баланс в настройках." 
+                          : "Insufficient balance! Please top up your balance in settings."}
+                      </div>
+                      <Button
+                        onClick={() => window.location.href = "/settings"}
+                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-6 flex items-center justify-center gap-2"
+                      >
+                        <CreditCard className="size-5" />
+                        {lang === "uz" ? "BALANSNI TO'LDIRISH" : lang === "ru" ? "ПОПОЛНИТЬ БАЛАНС" : "TOP UP BALANCE"}
+                      </Button>
+                    </div>
+                  )
+                }
+
+                return (
+                  <Button
+                    onClick={handleAutoPayProceed}
+                    disabled={isPaying}
+                    className="w-full bg-primary hover:bg-primary/80 text-white font-bold py-6 flex items-center justify-center gap-2"
+                  >
+                    {isPaying ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        {lang === "uz" ? "XARID QILINMOQDA..." : lang === "ru" ? "ПОКУПКА..." : "PURCHASING..."}
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="size-5" />
+                        {lang === "uz" ? "BALANSDAN SOTIB OLISH" : lang === "ru" ? "КУПИТЬ С БАЛАНСА" : "BUY WITH BALANCE"}
+                      </>
+                    )}
+                  </Button>
+                )
+              })()}
             </div>
           )}
         </DialogContent>
