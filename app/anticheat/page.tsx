@@ -66,13 +66,25 @@ export default function AnticheatPage() {
   const [filterRisk, setFilterRisk] = useState<string>("ALL")
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function loadServers() {
-      const data = await getServersAction()
-      setServers(data as ServerItem[])
-    }
-    loadServers()
-  }, [])
+  // Extract unique servers dynamically from all incoming logs AND database action
+  const dynamicServers = useMemo(() => {
+    const map = new Map<string, string>()
+
+    // Add servers from DB action
+    servers.forEach((s) => {
+      map.set(s.id, s.displayName || s.name)
+    })
+
+    // Add any serverId coming from actual plugin logs
+    logs.forEach((log) => {
+      if (log.serverId && !map.has(log.serverId)) {
+        const name = log.serverName || log.serverId.toUpperCase()
+        map.set(log.serverId, name)
+      }
+    })
+
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }))
+  }, [servers, logs])
 
   async function fetchAnticheatData() {
     setLoading(true)
@@ -324,7 +336,7 @@ export default function AnticheatPage() {
           >
             BARCHA SERVERLAR
           </button>
-          {servers.map((s) => (
+          {dynamicServers.map((s) => (
             <button
               key={s.id}
               onClick={() => setSelectedServer(s.id)}
@@ -335,7 +347,7 @@ export default function AnticheatPage() {
                   : "text-white/50 hover:text-white hover:bg-white/5"
               )}
             >
-              {s.displayName || s.name}
+              {s.name}
             </button>
           ))}
         </div>
