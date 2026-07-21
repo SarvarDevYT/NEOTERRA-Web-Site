@@ -61,10 +61,10 @@ export async function getAllUsersAdminAction() {
   try {
     const snapshot = await adminDb.collection("users").get()
     return snapshot.docs.map(doc => {
-      const data = doc.data()
+      const data = doc.data() || {}
       return {
         uid: doc.id,
-        email: data.email || "—",
+        email: data.email || doc.id.substring(0, 10) + "...",
         role: data.role || "user",
         minecraftUsername: data.minecraftUsername || null,
         balance: data.balance !== undefined ? Number(data.balance) : 0,

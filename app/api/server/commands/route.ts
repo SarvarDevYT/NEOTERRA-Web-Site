@@ -27,24 +27,27 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const serverId = url.searchParams.get("serverId")
 
-    let query = commandsRef.where("status", "==", "pending")
-    if (serverId) {
-      query = commandsRef.where("status", "==", "pending").where("serverId", "==", serverId)
-    }
-    const snapshot = await query.limit(50).get()
+    const snapshot = await commandsRef.where("status", "==", "pending").limit(50).get()
 
-    const commands = snapshot.docs.map(doc => {
-      const data = doc.data()
-      return {
-        id: doc.id,
-        command: data.command,
-        username: data.username,
-        userUid: data.userUid || null,
-        productId: data.productId || null,
-        status: data.status,
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-      }
-    })
+    const commands = snapshot.docs
+      .map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          command: data.command,
+          username: data.username,
+          userUid: data.userUid || null,
+          productId: data.productId || null,
+          serverId: data.serverId || "",
+          status: data.status,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+        }
+      })
+      .filter(cmd => {
+        if (!serverId) return true
+        // If command has no serverId specified or matches current serverId, allow it!
+        return !cmd.serverId || cmd.serverId === serverId
+      })
 
     return NextResponse.json({ success: true, commands })
   } catch (error: any) {

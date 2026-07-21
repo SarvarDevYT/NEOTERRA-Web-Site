@@ -92,6 +92,14 @@ export async function purchaseProductWithBalanceAction(
       })
 
       // 7. Write to command_queue
+      let targetServerId = productData.serverId || ""
+      if (!targetServerId) {
+        const activeServersSnap = await adminDb!.collection("servers").where("isActive", "==", true).limit(1).get()
+        if (!activeServersSnap.empty) {
+          targetServerId = activeServersSnap.docs[0].id
+        }
+      }
+
       const queueRef = adminDb!.collection("commands_queue")
       for (const cmd of commands) {
         const commandDocRef = queueRef.doc()
@@ -101,7 +109,7 @@ export async function purchaseProductWithBalanceAction(
           username: username,
           userUid: userUid,
           productId: productId,
-          serverId: productData.serverId || "",
+          serverId: targetServerId,
           amount: price,
           status: "pending",
           createdAt: FieldValue.serverTimestamp(),

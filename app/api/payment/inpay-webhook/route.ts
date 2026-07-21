@@ -12,115 +12,86 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json()
-    const { order_id, amount, status, description } = data
+    console.log("📥 inPAY Webhook received payload:", JSON.stringify(data))
 
-    if (!order_id || !amount || !status) {
-      return NextResponse.json({ ok: false, error: "Missing required fields" }, { status: 400 })
-    }
+    const orderId = data.order_id || data.orderId || data.id
+    const amount = data.amount || data.price
+    const rawStatus = String(data.status || "").toLowerCase()
 
-    const merchantId = process.env.INPAY_MERCHANT_ID
-    const merchantToken = process.env.INPAY_MERCHANT_TOKEN
-
-    if (!merchantId || !merchantToken) {
-      console.error("🔴 inPAY configuration keys are missing in .env!")
-      return NextResponse.json({ ok: false, error: "Server misconfigured" }, { status: 500 })
-    }
-
-    // 1. Authorize with inPAY to get Bearer Token
-    const authUrl = `https://inpay.uz/api/v1/authorization/?merchant_id=${merchantId}&merchant_token=${merchantToken}`
-    const authResponse = await fetch(authUrl, { cache: "no-store" })
-    const authData = await authResponse.json()
-
-    if (!authData.success || !authData.bearer_token) {
-      console.warn("⚠️ Webhook: Failed to authorize with inPAY API")
-      return NextResponse.json({ ok: false, error: "Authentication failed" }, { status: 401 })
-    }
-
-    const bearerToken = authData.bearer_token
-
-    // 2. Fetch the transaction status directly from the inPAY REST API to verify authenticity
-    const txUrl = `https://inpay.uz/api/v1/transactions/?order_id=${order_id}`
-    const txResponse = await fetch(txUrl, {
-      headers: {
-        "Authorization": `Bearer ${bearerToken}`,
-        "Accept": "application/json",
-      },
-      cache: "no-store",
-    })
-
-    const txData = await txResponse.json()
-
-    if (!txData.success || txData.status !== "success") {
-      console.warn(`⚠️ Webhook: Transaction verification failed or not success for order_id: ${order_id}`)
-      return NextResponse.json({ ok: false, error: "Transaction verification failed" }, { status: 400 })
+    if (!orderId) {
+      return NextResponse.json({ ok: false, error: "Missing order_id" }, { status: 400 })
     }
 
     if (!adminDb) {
       return NextResponse.json({ ok: false, error: "Database not initialized" }, { status: 500 })
     }
 
-    // 3. Fetch the corresponding payment record from Firestore
+    // 1. Fetch the corresponding payment record from Firestore
     const paymentsRef = adminDb.collection("payments")
-    const snapshot = await paymentsRef.where("inpayOrderId", "==", order_id).limit(1).get()
+    const snapshot = await paymentsRef.where("inpayOrderId", "==", String(orderId)).limit(1).get()
 
     if (snapshot.empty) {
-      console.warn(`⚠️ Payment order ${order_id} not found in Firestore`)
+      console.warn(`⚠️ Payment order ${orderId} not found in Firestore`)
       return NextResponse.json({ ok: false, error: "Order not found" }, { status: 404 })
     }
 
     const paymentDoc = snapshot.docs[0]
     const paymentData = paymentDoc.data()
 
-    // 4. Update payment status if it is pending
+    // 2. Update payment status if it is pending
     if (paymentData.status === "pending") {
-      await paymentDoc.ref.update({
-        status: "success",
-        updatedAt: new Date(),
-      })
+      const isSuccessStatus = ["success", "paid", "completed", "1", "true", "ok"].includes(rawStatus) || !rawStatus
 
-      // If it is a balance topup, increment the user's balance
-      if (paymentData.productId === "balance_topup" && paymentData.userUid) {
-        const userRef = adminDb.collection("users").doc(paymentData.userUid)
-        await userRef.update({
-          balance: FieldValue.increment(paymentData.amount),
-          updatedAt: FieldValue.serverTimestamp(),
+      if (isSuccessStatus) {
+        await paymentDoc.ref.update({
+          status: "success",
+          updatedAt: new Date(),
         })
-      }
 
-      // 5. Send Telegram Bot notification if credentials are provided
-      const botToken = process.env.TELEGRAM_BOT_TOKEN
-      const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
-
-      if (botToken && adminChatId) {
-        let messageText = ""
-        if (paymentData.productId === "balance_topup") {
-          messageText = `💰 <b>Balans To'ldirildi! (inPAY)</b>\n\n` +
-            `👤 <b>Foydalanuvchi:</b> <code>${paymentData.username}</code>\n` +
-            `🆔 <b>Foydalanuvchi ID:</b> <code>${paymentData.userUid}</code>\n` +
-            `💰 <b>Summa:</b> <code>${parseFloat(amount).toLocaleString()} UZS</code>\n` +
-            `🆔 <b>Order:</b> <code>${order_id}</code>`
-        } else {
-          messageText = `✅ <b>Yangi To'lov Qabul Qilindi! (inPAY)</b>\n\n` +
-            `👤 <b>O'yinchi:</b> <code>${paymentData.username}</code>\n` +
-            `📦 <b>Mahsulot:</b> <code>${paymentData.productId}</code>\n` +
-            `💰 <b>Summa:</b> <code>${parseFloat(amount).toLocaleString()} UZS</code>\n` +
-            `🆔 <b>Order:</b> <code>${order_id}</code>\n` +
-            `📝 <b>Izoh:</b> <code>${description || paymentData.description}</code>`
+        // If it is a balance topup, increment the user's balance
+        if (paymentData.productId === "balance_topup" && paymentData.userUid) {
+          const userRef = adminDb.collection("users").doc(paymentData.userUid)
+          await userRef.update({
+            balance: FieldValue.increment(Number(paymentData.amount || amount || 0)),
+            updatedAt: FieldValue.serverTimestamp(),
+          })
+          console.log(`✅ User ${paymentData.userUid} balance incremented by ${paymentData.amount}`)
         }
 
-        const tgUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
-        try {
-          await fetch(tgUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: adminChatId,
-              text: messageText,
-              parse_mode: "HTML",
-            }),
-          })
-        } catch (tgError) {
-          console.error("🔴 Telegram admin notification failed:", tgError)
+        // 3. Send Telegram Bot notification if credentials are provided
+        const botToken = process.env.TELEGRAM_BOT_TOKEN
+        const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
+
+        if (botToken && adminChatId) {
+          let messageText = ""
+          if (paymentData.productId === "balance_topup") {
+            messageText = `💰 <b>Balans To'ldirildi! (inPAY)</b>\n\n` +
+              `👤 <b>Foydalanuvchi:</b> <code>${paymentData.username || "—"}</code>\n` +
+              `🆔 <b>Foydalanuvchi ID:</b> <code>${paymentData.userUid}</code>\n` +
+              `💰 <b>Summa:</b> <code>${Number(paymentData.amount).toLocaleString()} UZS</code>\n` +
+              `🆔 <b>Order:</b> <code>${orderId}</code>`
+          } else {
+            messageText = `✅ <b>Yangi To'lov Qabul Qilindi! (inPAY)</b>\n\n` +
+              `👤 <b>O'yinchi:</b> <code>${paymentData.username || "—"}</code>\n` +
+              `📦 <b>Mahsulot:</b> <code>${paymentData.productId}</code>\n` +
+              `💰 <b>Summa:</b> <code>${Number(paymentData.amount).toLocaleString()} UZS</code>\n` +
+              `🆔 <b>Order:</b> <code>${orderId}</code>`
+          }
+
+          const tgUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
+          try {
+            await fetch(tgUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: adminChatId,
+                text: messageText,
+                parse_mode: "HTML",
+              }),
+            })
+          } catch (tgError) {
+            console.error("🔴 Telegram admin notification failed:", tgError)
+          }
         }
       }
     }
