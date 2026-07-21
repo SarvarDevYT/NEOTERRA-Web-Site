@@ -66,20 +66,29 @@ export default function AnticheatPage() {
   const [filterRisk, setFilterRisk] = useState<string>("ALL")
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
 
-  // Extract unique servers dynamically from all incoming logs AND database action
+  useEffect(() => {
+    async function loadServers() {
+      const data = await getServersAction()
+      if (Array.isArray(data)) {
+        setServers(data as ServerItem[])
+      }
+    }
+    loadServers()
+  }, [])
+
+  // Combine servers from Admin Panel database with log serverIds
   const dynamicServers = useMemo(() => {
     const map = new Map<string, string>()
 
-    // Add servers from DB action
+    // Priority 1: Servers registered in Admin Panel
     servers.forEach((s) => {
       map.set(s.id, s.displayName || s.name)
     })
 
-    // Add any serverId coming from actual plugin logs
+    // Priority 2: Fallback for any incoming plugin logs
     logs.forEach((log) => {
       if (log.serverId && !map.has(log.serverId)) {
-        const name = log.serverName || log.serverId.toUpperCase()
-        map.set(log.serverId, name)
+        map.set(log.serverId, log.serverName || log.serverId.toUpperCase())
       }
     })
 
