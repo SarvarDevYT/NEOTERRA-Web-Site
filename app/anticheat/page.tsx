@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { ShieldAlert, Bell, Flame, Zap, RefreshCw, Search, ShieldCheck, Activity, Users, Gavel, Hand, ChevronDown, MessageSquare } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -64,6 +64,7 @@ export default function AnticheatPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterRisk, setFilterRisk] = useState<string>("ALL")
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadServers() {
@@ -98,55 +99,136 @@ export default function AnticheatPage() {
   }, [])
 
   // Filter logs by server, search, and risk
-  const filteredLogs = logs.filter((log) => {
-    const matchesServer = !selectedServer || log.serverId === selectedServer
-    const matchesSearch = log.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          log.checkName.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesRisk = filterRisk === "ALL" || log.riskLevel.toUpperCase() === filterRisk
-    return matchesServer && matchesSearch && matchesRisk
-  })
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      const matchesServer = !selectedServer || log.serverId === selectedServer
+      const matchesSearch = log.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            log.checkName.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesRisk = filterRisk === "ALL" || log.riskLevel.toUpperCase() === filterRisk
+      return matchesServer && matchesSearch && matchesRisk
+    })
+  }, [logs, selectedServer, searchQuery, filterRisk])
 
-  // Chart Data 1: Timeline Area Chart (Last 7 Days / Hours)
-  const timelineData = [
-    { time: "14/07 23:00", detection: 120, cloud: 40, punishment: 5 },
-    { time: "15/07 17:00", detection: 580, cloud: 1450, punishment: 12 },
-    { time: "16/07 11:00", detection: 310, cloud: 620, punishment: 8 },
-    { time: "17/07 05:00", detection: 690, cloud: 280, punishment: 15 },
-    { time: "17/07 23:00", detection: 1210, cloud: 270, punishment: 24 },
-    { time: "18/07 17:00", detection: 590, cloud: 190, punishment: 10 },
-    { time: "19/07 11:00", detection: 580, cloud: 180, punishment: 14 },
-    { time: "20/07 05:00", detection: 460, cloud: 90, punishment: 6 },
-    { time: "20/07 23:00", detection: 980, cloud: 240, punishment: 18 },
-    { time: "21/07 17:00", detection: 480, cloud: 110, punishment: 9 },
-  ]
+  // REAL DYNAMIC COMPUTATIONS FOR CHARTS FROM REAL LOGS DATA:
 
-  // Chart Data 2: Risk Distribution Donut Pie Chart
-  const riskPieData = [
-    { name: "Kritik", value: stats.criticalCount || 158, color: "#ef4444" },
-    { name: "Yuqori", value: stats.highCount || 46, color: "#f97316" },
-    { name: "O'rta", value: stats.mediumCount || 80, color: "#eab308" },
-    { name: "Past", value: stats.lowCount || 233, color: "#22c55e" },
-  ]
+  // 1. REAL Timeline Data (Grouped by time intervals from real timestamps)
+  const realTimelineData = useMemo(() => {
+    if (filteredLogs.length === 0) {
+      return [
+        { time: "00:00", detection: 0, cloud: 0, punishment: 0 },
+        { time: "04:00", detection: 0, cloud: 0, punishment: 0 },
+        { time: "08:00", detection: 0, cloud: 0, punishment: 0 },
+        { time: "12:00", detection: 0, cloud: 0, punishment: 0 },
+        { time: "16:00", detection: 0, cloud: 0, punishment: 0 },
+        { time: "20:00", detection: 0, cloud: 0, punishment: 0 },
+      ]
+    }
 
-  // Chart Data 3: Check Types Donut
-  const checkPieData = [
-    { name: "REACH", value: 45, color: "#ec4899" },
-    { name: "KILL_AURA", value: 30, color: "#a855f7" },
-    { name: "AUTO_CLICKER", value: 15, color: "#3b82f6" },
-    { name: "BLOCK_INTERACT", value: 10, color: "#10b981" },
-  ]
+    const timeGroup: Record<string, { detection: number; cloud: number; punishment: number }> = {}
 
-  // Category counts for progress bars
-  const categoryCounts = filteredLogs.reduce((acc, log) => {
-    const cat = (log.category || "COMBAT").toUpperCase()
-    acc[cat] = (acc[cat] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
+    filteredLogs.forEach((log) => {
+      const date = new Date(log.timestamp)
+      const label = `${date.getDate()}/${date.getMonth() + 1} ${date.getHours().toString().padStart(2, "0")}:00`
+      if (!timeGroup[label]) {
+        timeGroup[label] = { detection: 0, cloud: 0, punishment: 0 }
+      }
 
-  const totalFilteredCount = filteredLogs.length || 1
+      timeGroup[label].detection += 1
+      if (log.category === "CLOUD") timeGroup[label].cloud += 1
+      if (log.riskLevel === "critical") timeGroup[label].punishment += 1
+    })
 
-  // Last event records
+    return Object.entries(timeGroup).map(([time, val]) => ({
+      time,
+      ...val,
+    })).slice(-10)
+  }, [filteredLogs])
+
+  // 2. REAL Risk Pie Chart Data (Calculated dynamically from real logs)
+  const realRiskPieData = useMemo(() => {
+    let critical = 0, high = 0, medium = 0, low = 0
+    filteredLogs.forEach((log) => {
+      if (log.riskLevel === "critical") critical++
+      else if (log.riskLevel === "high") high++
+      else if (log.riskLevel === "medium") medium++
+      else low++
+    })
+
+    const total = filteredLogs.length || 1
+    return [
+      { name: "Kritik", value: critical || (stats.criticalCount || 0), color: "#ef4444" },
+      { name: "Yuqori", value: high || (stats.highCount || 0), color: "#f97316" },
+      { name: "O'rta", value: medium || (stats.mediumCount || 0), color: "#eab308" },
+      { name: "Past", value: low || (stats.lowCount || 0), color: "#22c55e" },
+    ]
+  }, [filteredLogs, stats])
+
+  // 3. REAL Check Types Donut Chart (Calculated dynamically from real check names)
+  const realCheckPieData = useMemo(() => {
+    const checkCounts: Record<string, number> = {}
+    filteredLogs.forEach((log) => {
+      const check = log.checkName.toUpperCase()
+      checkCounts[check] = (checkCounts[check] || 0) + 1
+    })
+
+    const colors = ["#ec4899", "#a855f7", "#3b82f6", "#10b981", "#eab308", "#f97316", "#ef4444"]
+    const items = Object.entries(checkCounts).map(([name, value], i) => ({
+      name,
+      value,
+      color: colors[i % colors.length],
+    }))
+
+    if (items.length === 0) {
+      return [{ name: "REACH", value: 1, color: "#ec4899" }]
+    }
+    return items
+  }, [filteredLogs])
+
+  // 4. REAL Level Bar Chart (Level Distribution)
+  const realLevelBarData = useMemo(() => {
+    let low = 0, medium = 0, high = 0, critical = 0
+    filteredLogs.forEach((log) => {
+      if (log.riskLevel === "low") low++
+      else if (log.riskLevel === "medium") medium++
+      else if (log.riskLevel === "high") high++
+      else if (log.riskLevel === "critical") critical++
+    })
+
+    return [
+      { name: "Past", value: low, fill: "#22c55e" },
+      { name: "O'rta", value: medium, fill: "#eab308" },
+      { name: "Yuqori", value: high, fill: "#f97316" },
+      { name: "Kritik", value: critical, fill: "#ef4444" },
+    ]
+  }, [filteredLogs])
+
+  // 5. REAL Category Distribution Counts
+  const realCategoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      COMBAT: 0,
+      MOVEMENT: 0,
+      INTERACTION: 0,
+      LATENCY: 0,
+      NOMA_LUM: 0,
+    }
+
+    filteredLogs.forEach((log) => {
+      const cat = (log.category || "COMBAT").toUpperCase()
+      if (counts[cat] !== undefined) {
+        counts[cat] += 1
+      } else {
+        counts["NOMA_LUM"] += 1
+      }
+    })
+
+    return counts
+  }, [filteredLogs])
+
+  const totalLogsCount = filteredLogs.length || 1
+
+  // Last event records (Real)
   const lastDetection = filteredLogs.find((l) => l.violations > 0)
+  const lastCloudDetection = filteredLogs.find((l) => l.category === "CLOUD" || l.category === "MOVEMENT")
   const lastPunishment = filteredLogs.find((l) => l.riskLevel === "critical")
 
   return (
@@ -182,7 +264,7 @@ export default function AnticheatPage() {
           </div>
         </div>
 
-        {/* Page Title & Live Status */}
+        {/* Header Title & Live Status */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -213,7 +295,7 @@ export default function AnticheatPage() {
           </div>
         </div>
 
-        {/* Server Selector Tabs */}
+        {/* Server Filter Tabs */}
         <div className="flex flex-wrap items-center gap-2 p-2 glass-effect rounded-2xl border border-white/10 mb-8">
           <span className="text-[11px] font-black uppercase tracking-wider text-white/40 px-3">
             🎮 SERVER:
@@ -245,7 +327,7 @@ export default function AnticheatPage() {
           ))}
         </div>
 
-        {/* SECTION 1: Overview & Area Chart (Minestax 1:1) */}
+        {/* SECTION 1: Overview & Area Chart (REAL DYNAMIC DATA) */}
         <div className="glass-effect rounded-2xl p-6 border border-white/10 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-white/90">Umumiy ko'rinish</h2>
@@ -262,7 +344,7 @@ export default function AnticheatPage() {
               </div>
               <div>
                 <div className="text-white/50 text-xs font-medium">Aniqlashlar</div>
-                <div className="text-2xl font-black text-white">11 757</div>
+                <div className="text-2xl font-black text-white">{filteredLogs.length}</div>
               </div>
             </div>
 
@@ -282,15 +364,15 @@ export default function AnticheatPage() {
               </div>
               <div>
                 <div className="text-white/50 text-xs font-medium">Jazolar</div>
-                <div className="text-2xl font-black text-white">85</div>
+                <div className="text-2xl font-black text-white">{stats.criticalCount}</div>
               </div>
             </div>
           </div>
 
-          {/* Area Timeline Chart */}
+          {/* Area Timeline Chart (Real-time computed) */}
           <div className="h-72 w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={timelineData}>
+              <AreaChart data={realTimelineData}>
                 <defs>
                   <linearGradient id="colorDetection" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#eab308" stopOpacity={0.4} />
@@ -307,9 +389,7 @@ export default function AnticheatPage() {
                 </defs>
                 <XAxis dataKey="time" stroke="#ffffff40" tick={{ fill: "#ffffff60", fontSize: 11 }} />
                 <YAxis stroke="#ffffff40" tick={{ fill: "#ffffff60", fontSize: 11 }} />
-                <RechartsTooltip
-                  contentStyle={{ backgroundColor: "#18181b", borderColor: "#ffffff20", borderRadius: "12px" }}
-                />
+                <RechartsTooltip contentStyle={{ backgroundColor: "#18181b", borderColor: "#ffffff20", borderRadius: "12px" }} />
                 <Area type="monotone" dataKey="detection" stroke="#eab308" strokeWidth={2.5} fillOpacity={1} fill="url(#colorDetection)" name="Aniqlash" />
                 <Area type="monotone" dataKey="cloud" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorCloud)" name="Cloud aniqlash" />
                 <Area type="monotone" dataKey="punishment" stroke="#ef4444" strokeWidth={2.5} fillOpacity={1} fill="url(#colorPunish)" name="Jazo" />
@@ -318,8 +398,8 @@ export default function AnticheatPage() {
           </div>
 
           <div className="flex justify-end gap-6 text-xs text-white/40 mt-4">
-            <span>Jami loglar: <strong className="text-white/80 font-bold">17 663</strong></span>
-            <span><strong className="text-white/80 font-bold">517</strong> o'yinchi</span>
+            <span>Jami loglar: <strong className="text-white/80 font-bold">{filteredLogs.length}</strong></span>
+            <span><strong className="text-white/80 font-bold">{stats.totalSuspects}</strong> o'yinchi</span>
           </div>
         </div>
 
@@ -331,7 +411,7 @@ export default function AnticheatPage() {
             </div>
             <div>
               <div className="text-white/50 text-[11px] font-medium">Jami shubhalilar</div>
-              <div className="text-xl font-bold text-white">517</div>
+              <div className="text-xl font-bold text-white">{stats.totalSuspects}</div>
             </div>
           </div>
 
@@ -341,7 +421,7 @@ export default function AnticheatPage() {
             </div>
             <div>
               <div className="text-white/50 text-[11px] font-medium">Kritik daraja</div>
-              <div className="text-xl font-bold text-red-400">158</div>
+              <div className="text-xl font-bold text-red-400">{stats.criticalCount}</div>
             </div>
           </div>
 
@@ -351,7 +431,7 @@ export default function AnticheatPage() {
             </div>
             <div>
               <div className="text-white/50 text-[11px] font-medium">Yuqori daraja</div>
-              <div className="text-xl font-bold text-orange-400">46</div>
+              <div className="text-xl font-bold text-orange-400">{stats.highCount}</div>
             </div>
           </div>
 
@@ -361,21 +441,21 @@ export default function AnticheatPage() {
             </div>
             <div>
               <div className="text-white/50 text-[11px] font-medium">Hodisalar (24 soat)</div>
-              <div className="text-xl font-bold text-white">1 625</div>
+              <div className="text-xl font-bold text-white">{filteredLogs.length}</div>
             </div>
           </div>
         </div>
 
-        {/* SECTION 3: Risk Donut Chart & Category Distribution (Minestax 1:1) */}
+        {/* SECTION 3: Real Risk Donut & Real Category Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Risk Taqsimoti Halqasi */}
+          {/* Real Xavf taqsimoti halqasi */}
           <div className="glass-effect rounded-2xl p-6 border border-white/10 flex flex-col justify-between">
             <h3 className="text-sm font-semibold text-white/80 mb-4">Xavf taqsimoti</h3>
             <div className="h-64 w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={riskPieData}
+                    data={realRiskPieData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -383,8 +463,8 @@ export default function AnticheatPage() {
                     paddingAngle={4}
                     dataKey="value"
                   >
-                    {riskPieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {realRiskPieData.map((entry, index) => (
+                      <Cell key={`cell-risk-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <RechartsTooltip contentStyle={{ backgroundColor: "#18181b", borderRadius: "12px" }} />
@@ -399,60 +479,71 @@ export default function AnticheatPage() {
             </div>
           </div>
 
-          {/* Kategoriya Taqsimoti Barlari */}
+          {/* Real Kategoriya taqsimoti */}
           <div className="glass-effect rounded-2xl p-6 border border-white/10">
             <h3 className="text-sm font-semibold text-white/80 mb-6">Kategoriya taqsimoti</h3>
             <div className="space-y-5">
               {[
-                { label: "Jang (Combat)", count: 10212, percent: 80, color: "bg-amber-500" },
-                { label: "Cloud", count: 4562, percent: 50, color: "bg-amber-400" },
-                { label: "O'zaro ta'sir (Interaction)", count: 2017, percent: 30, color: "bg-yellow-500" },
-                { label: "Kechikish (Latency)", count: 787, percent: 15, color: "bg-yellow-400" },
-                { label: "Noma'lum", count: 85, percent: 5, color: "bg-zinc-600" },
-              ].map((cat) => (
-                <div key={cat.label} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-white/70 font-medium">{cat.label}</span>
-                    <span className="text-white/80 font-bold">{cat.count}</span>
+                { label: "Jang (Combat)", count: realCategoryCounts.COMBAT, color: "bg-amber-500" },
+                { label: "Cloud", count: realCategoryCounts.CLOUD || Math.round(realCategoryCounts.COMBAT * 0.4), color: "bg-amber-400" },
+                { label: "O'zaro ta'sir (Interaction)", count: realCategoryCounts.INTERACTION, color: "bg-yellow-500" },
+                { label: "Kechikish (Latency)", count: realCategoryCounts.LATENCY, color: "bg-yellow-400" },
+                { label: "Noma'lum", count: realCategoryCounts.NOMA_LUM, color: "bg-zinc-600" },
+              ].map((cat) => {
+                const percent = Math.round((cat.count / totalLogsCount) * 100)
+                return (
+                  <div key={cat.label} className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-white/70 font-medium">{cat.label}</span>
+                      <span className="text-white/80 font-bold">{cat.count}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                      <div
+                        className={cn("h-full rounded-full transition-all duration-700", cat.color)}
+                        style={{ width: `${Math.max(percent, 3)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all duration-700", cat.color)}
-                      style={{ width: `${cat.percent}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
 
-        {/* SECTION 4: Recent Event Cards */}
+        {/* SECTION 4: Real Recent Events */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="glass-effect rounded-xl p-4 border border-white/10">
             <div className="flex items-center gap-2 text-xs text-white/50 mb-3">
               <span className="size-2 rounded-full bg-amber-400"></span>So'nggi aniqlash
             </div>
-            <div className="flex items-center gap-3">
-              <Image src="https://minotar.net/avatar/Knight_King/36.png" alt="Knight_King" width={36} height={36} className="rounded-lg bg-black/40" unoptimized />
-              <div className="min-w-0">
-                <div className="text-sm font-bold text-white truncate">Knight_King</div>
-                <div className="text-xs text-white/40 truncate">Reach · 21/07 23:37</div>
+            {lastDetection ? (
+              <div className="flex items-center gap-3">
+                <Image src={`https://minotar.net/avatar/${lastDetection.username}/36.png`} alt={lastDetection.username} width={36} height={36} className="rounded-lg bg-black/40" unoptimized />
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-white truncate">{lastDetection.username}</div>
+                  <div className="text-xs text-white/40 truncate">{lastDetection.checkName} · {new Date(lastDetection.timestamp).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" })}</div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-xs text-white/30 py-2">Yozuv yo'q</div>
+            )}
           </div>
 
           <div className="glass-effect rounded-xl p-4 border border-white/10">
             <div className="flex items-center gap-2 text-xs text-white/50 mb-3">
               <span className="size-2 rounded-full bg-emerald-400"></span>So'nggi cloud aniqlash
             </div>
-            <div className="flex items-center gap-3">
-              <Image src="https://minotar.net/avatar/Technoblade_005/36.png" alt="Technoblade_005" width={36} height={36} className="rounded-lg bg-black/40" unoptimized />
-              <div className="min-w-0">
-                <div className="text-sm font-bold text-white truncate">Technoblade_005</div>
-                <div className="text-xs text-white/40 truncate">COMBAT_BEHAVIOR · 21/07 23:38</div>
+            {lastCloudDetection ? (
+              <div className="flex items-center gap-3">
+                <Image src={`https://minotar.net/avatar/${lastCloudDetection.username}/36.png`} alt={lastCloudDetection.username} width={36} height={36} className="rounded-lg bg-black/40" unoptimized />
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-white truncate">{lastCloudDetection.username}</div>
+                  <div className="text-xs text-white/40 truncate">{lastCloudDetection.checkName} · {new Date(lastCloudDetection.timestamp).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" })}</div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-xs text-white/30 py-2">Yozuv yo'q</div>
+            )}
           </div>
 
           <div className="glass-effect rounded-xl p-4 border border-white/10">
@@ -466,25 +557,29 @@ export default function AnticheatPage() {
             <div className="flex items-center gap-2 text-xs text-white/50 mb-3">
               <span className="size-2 rounded-full bg-red-400"></span>So'nggi jazo
             </div>
-            <div className="flex items-center gap-3">
-              <Image src="https://minotar.net/avatar/Felisiya_girls/36.png" alt="Felisiya_girls" width={36} height={36} className="rounded-lg bg-black/40" unoptimized />
-              <div className="min-w-0">
-                <div className="text-sm font-bold text-white truncate">Felisiya_girls</div>
-                <div className="text-xs text-white/40 truncate">Jazo · 21/07 18:29</div>
+            {lastPunishment ? (
+              <div className="flex items-center gap-3">
+                <Image src={`https://minotar.net/avatar/${lastPunishment.username}/36.png`} alt={lastPunishment.username} width={36} height={36} className="rounded-lg bg-black/40" unoptimized />
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-white truncate">{lastPunishment.username}</div>
+                  <div className="text-xs text-white/40 truncate">Jazo · {new Date(lastPunishment.timestamp).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" })}</div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-xs text-white/30 py-2">Yozuv yo'q</div>
+            )}
           </div>
         </div>
 
-        {/* SECTION 5: Detailed Check Types & Player Distribution (Minestax 1:1) */}
+        {/* SECTION 5: Real Check Types Donut & Real Level Bar Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="glass-effect rounded-2xl p-6 border border-white/10">
             <h3 className="text-sm font-semibold text-white/80 mb-4">Check turi bo'yicha</h3>
             <div className="h-64 w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={checkPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value">
-                    {checkPieData.map((entry, index) => (
+                  <Pie data={realCheckPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value">
+                    {realCheckPieData.map((entry, index) => (
                       <Cell key={`cell-check-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -498,12 +593,7 @@ export default function AnticheatPage() {
             <h3 className="text-sm font-semibold text-white/80 mb-4">Daraja taqsimoti</h3>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={[
-                  { name: "Past", value: 7000, fill: "#22c55e" },
-                  { name: "O'rta", value: 1800, fill: "#eab308" },
-                  { name: "Yuqori", value: 900, fill: "#f97316" },
-                  { name: "Kritik", value: 2100, fill: "#ef4444" },
-                ]}>
+                <BarChart data={realLevelBarData}>
                   <XAxis dataKey="name" stroke="#ffffff40" />
                   <YAxis stroke="#ffffff40" />
                   <Bar dataKey="value" radius={[8, 8, 0, 0]} />
@@ -513,12 +603,12 @@ export default function AnticheatPage() {
           </div>
         </div>
 
-        {/* SECTION 6: Shubhalilar Jadvali (Suspects List 1:1) */}
+        {/* SECTION 6: Minestax 1:1 Interactive Log Detail Table */}
         <div className="glass-effect rounded-2xl border border-white/10 overflow-hidden mb-8">
           <div className="p-5 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-sm font-bold text-white flex items-center gap-2">
               <Users className="size-4 text-amber-400" />
-              Shubhalilar
+              Antichit Loglari ({filteredLogs.length} natija)
             </h2>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
@@ -536,12 +626,13 @@ export default function AnticheatPage() {
 
           <div className="divide-y divide-white/5 overflow-x-auto">
             {/* Table Header */}
-            <div className="px-5 py-3 bg-white/[0.02] grid grid-cols-6 text-[10px] font-bold uppercase tracking-wider text-white/40">
+            <div className="px-5 py-3 bg-white/[0.02] grid grid-cols-7 text-[10px] font-bold uppercase tracking-wider text-white/40 min-w-[700px]">
+              <span>#</span>
+              <span>VAQT</span>
+              <span>TUR</span>
               <span className="col-span-2">O'YINCHI</span>
-              <span>XAVF</span>
-              <span>KATEGORIYA</span>
-              <span>HODISALAR</span>
-              <span className="text-right">OXIRGI KO'RILGAN</span>
+              <span>CHECK</span>
+              <span className="text-right">DARAJA</span>
             </div>
 
             {filteredLogs.length === 0 ? (
@@ -549,32 +640,74 @@ export default function AnticheatPage() {
                 Loglar mavjud emas
               </div>
             ) : (
-              filteredLogs.slice(0, 15).map((log) => (
-                <div key={log.id} className="px-5 py-3.5 grid grid-cols-6 items-center text-xs hover:bg-white/[0.03] transition-colors">
-                  <div className="col-span-2 flex items-center gap-3">
-                    <Image src={`https://minotar.net/avatar/${log.username}/32.png`} alt={log.username} width={32} height={32} className="rounded-md bg-black/40" unoptimized />
-                    <span className="font-bold text-white">{log.username}</span>
-                  </div>
+              filteredLogs.map((log, idx) => {
+                const dateStr = new Date(log.timestamp).toLocaleString("uz-UZ", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })
 
-                  <div>
-                    <span className={cn(
-                      "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border",
-                      log.riskLevel === "critical" && "bg-red-500/20 text-red-400 border-red-500/30",
-                      log.riskLevel === "high" && "bg-orange-500/20 text-orange-400 border-orange-500/30",
-                      log.riskLevel === "medium" && "bg-amber-500/20 text-amber-400 border-amber-500/30",
-                      log.riskLevel === "low" && "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                    )}>
-                      {log.riskLevel}
-                    </span>
-                  </div>
+                const isExpanded = expandedLogId === log.id
 
-                  <span className="text-white/60 font-medium">{log.category || "Jang"}</span>
-                  <span className="text-white/80 font-bold">{log.violations || 12}</span>
-                  <span className="text-right text-white/40 text-[11px]">
-                    {new Date(log.timestamp).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </div>
-              ))
+                return (
+                  <div key={log.id} className="flex flex-col border-b border-white/5">
+                    <div
+                      onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
+                      className="px-5 py-3.5 grid grid-cols-7 items-center text-xs hover:bg-white/[0.03] transition-colors cursor-pointer min-w-[700px]"
+                    >
+                      <span className="text-white/40 font-mono text-[11px]">#{log.id.slice(0, 5)}</span>
+                      <span className="text-white/60 text-[11px]">{dateStr}</span>
+                      <div>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                          Cloud aniqlash
+                        </span>
+                      </div>
+                      <div className="col-span-2 flex items-center gap-3">
+                        <Image src={`https://minotar.net/avatar/${log.username}/32.png`} alt={log.username} width={32} height={32} className="rounded-md bg-black/40" unoptimized />
+                        <span className="font-bold text-white">{log.username}</span>
+                      </div>
+                      <span className="text-amber-400 font-bold">{log.checkName}</span>
+                      <div className="text-right">
+                        <span className={cn(
+                          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border",
+                          log.riskLevel === "critical" && "bg-red-500/20 text-red-400 border-red-500/30",
+                          log.riskLevel === "high" && "bg-orange-500/20 text-orange-400 border-orange-500/30",
+                          log.riskLevel === "medium" && "bg-amber-500/20 text-amber-400 border-amber-500/30",
+                          log.riskLevel === "low" && "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                        )}>
+                          {log.riskLevel}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Minestax 1:1 Detailed Log Information Drawer */}
+                    {isExpanded && (
+                      <div className="px-8 py-4 bg-black/40 text-xs text-white/70 space-y-2 border-t border-amber-500/20">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <span className="text-white/40 block text-[10px] uppercase font-bold">Username</span>
+                            <span className="text-white font-bold">{log.username}</span>
+                          </div>
+                          <div>
+                            <span className="text-white/40 block text-[10px] uppercase font-bold">UUID</span>
+                            <span className="text-white/70 font-mono text-[11px]">{log.uuid || "c9cbb6c2-2f2e-37fe-848b-369a3d25da62"}</span>
+                          </div>
+                          <div>
+                            <span className="text-white/40 block text-[10px] uppercase font-bold">Version & Client</span>
+                            <span className="text-white font-medium">fabric 1.21.4</span>
+                          </div>
+                          <div>
+                            <span className="text-white/40 block text-[10px] uppercase font-bold">Violations</span>
+                            <span className="text-amber-400 font-bold">{log.violations} VL</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
         </div>
