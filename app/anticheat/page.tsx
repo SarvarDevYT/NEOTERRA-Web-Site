@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ShieldAlert, Bell, Flame, Zap, RefreshCw, Search, ShieldCheck, Activity, Users, Gavel, Hand, ChevronDown } from "lucide-react"
+import { ShieldAlert, Bell, Flame, Zap, RefreshCw, Search, ShieldCheck, Activity, Users, Gavel, Hand, ChevronDown, MessageSquare } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Footer } from "@/components/footer"
@@ -112,25 +112,30 @@ export default function AnticheatPage() {
       <div className="container mx-auto px-4 max-w-6xl">
         
         {/* Navigation Sub-Tabs (Bans | Anticheat | Mutes) */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-10">
           <div className="flex items-center gap-2 p-1.5 glass-effect rounded-2xl border border-white/10">
             <Link
               href="/bans"
-              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white/50 hover:text-white hover:bg-white/5 transition-all"
+              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
             >
-              🚫 BANLAR
+              <Gavel className="size-4" />
+              BANLAR
             </Link>
+
             <Link
               href="/anticheat"
-              className="px-6 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-lg shadow-amber-500/30 transition-all"
+              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-lg shadow-amber-500/30 flex items-center gap-2 uppercase tracking-wider"
             >
-              🛡️ ANTICHEAT
+              <ShieldAlert className="size-4" />
+              ANTICHEAT
             </Link>
+
             <Link
-              href="/mutes"
-              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white/50 hover:text-white hover:bg-white/5 transition-all"
+              href="/bans"
+              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
             >
-              🔇 MUTELAR
+              <MessageSquare className="size-4" />
+              MUTELAR
             </Link>
           </div>
         </div>

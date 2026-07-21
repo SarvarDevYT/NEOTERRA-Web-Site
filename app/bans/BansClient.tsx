@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Gavel, MessageSquare, Clock, User, ShieldAlert } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
 import { uz, ru, enUS } from "date-fns/locale";
 import { useTranslation } from "@/hooks/use-translation";
+import { cn } from "@/lib/utils";
 
 interface PenaltyData {
   id: string;
@@ -26,6 +28,7 @@ interface BansClientProps {
 
 export default function BansClient({ initialBans, initialMutes, dbError }: BansClientProps) {
   const { lang, t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<"bans" | "mutes">("bans");
 
   // Pick correct locale for date-fns
   const dateLocale = lang === "ru" ? ru : lang === "en" ? enUS : uz;
@@ -67,35 +70,46 @@ export default function BansClient({ initialBans, initialMutes, dbError }: BansC
           </p>
         </header>
 
-        <Tabs defaultValue="bans" className="w-full">
-          <div className="flex justify-center mb-12">
-            <TabsList className="bg-zinc-900/60 border border-white/10 p-1.5 rounded-full flex gap-2 h-auto backdrop-blur-md">
-              <TabsTrigger
-                value="bans"
-                className="px-8 py-3 rounded-full text-xs font-black uppercase tracking-wider transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20"
-              >
-                <Gavel className="size-4 mr-2 inline" />
-                {lang === "uz" ? "BANLAR" : lang === "ru" ? "БАНЫ" : "BANS"} ({initialBans.length})
-              </TabsTrigger>
+        {/* Navigation Sub-Tabs (Bans | Anticheat | Mutes) */}
+        <div className="flex justify-center mb-10">
+          <div className="flex items-center gap-2 p-1.5 glass-effect rounded-2xl border border-white/10">
+            <button
+              onClick={() => setActiveTab("bans")}
+              className={cn(
+                "px-6 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 uppercase tracking-wider",
+                activeTab === "bans"
+                  ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-lg shadow-amber-500/30"
+                  : "text-white/50 hover:text-white hover:bg-white/5"
+              )}
+            >
+              <Gavel className="size-4" />
+              {lang === "uz" ? "BANLAR" : lang === "ru" ? "БАНЫ" : "BANS"} ({initialBans.length})
+            </button>
 
-              <a
-                href="/anticheat"
-                className="px-8 py-3 rounded-full text-xs font-black uppercase tracking-wider transition-all bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black flex items-center justify-center"
-              >
-                <ShieldAlert className="size-4 mr-2 inline" />
-                ANTICHEAT
-              </a>
+            <Link
+              href="/anticheat"
+              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
+            >
+              <ShieldAlert className="size-4" />
+              ANTICHEAT
+            </Link>
 
-              <TabsTrigger
-                value="mutes"
-                className="px-8 py-3 rounded-full text-xs font-black uppercase tracking-wider transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20"
-              >
-                <MessageSquare className="size-4 mr-2 inline" />
-                {lang === "uz" ? "MUTELAR" : lang === "ru" ? "МУТЫ" : "MUTES"} ({initialMutes.length})
-              </TabsTrigger>
-            </TabsList>
+            <button
+              onClick={() => setActiveTab("mutes")}
+              className={cn(
+                "px-6 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 uppercase tracking-wider",
+                activeTab === "mutes"
+                  ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-lg shadow-amber-500/30"
+                  : "text-white/50 hover:text-white hover:bg-white/5"
+              )}
+            >
+              <MessageSquare className="size-4" />
+              {lang === "uz" ? "MUTELAR" : lang === "ru" ? "МУТЫ" : "MUTES"} ({initialMutes.length})
+            </button>
           </div>
+        </div>
 
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "bans" | "mutes")} className="w-full">
           <TabsContent value="bans" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid gap-4">
               {initialBans.length === 0 ? (
