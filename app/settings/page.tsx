@@ -16,7 +16,8 @@ import { auth as firebaseClientAuth } from "@/lib/firebase";
 import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-profile";
 import { createInpayPaymentAction } from "@/app/actions/inpay";
 import { verifyLinkCode, kickPlayer, tempBanPlayer } from "@/app/actions/player-link";
-import { Shield, Key, Mail, User, LogOut, Check, CreditCard, Gamepad2, Ban, DoorOpen } from "lucide-react";
+import { unlinkTelegramAction, unlinkMinecraftAction } from "@/app/actions/player-profile";
+import { Shield, Key, Mail, User, LogOut, Check, CreditCard, Gamepad2, Ban, DoorOpen, Send, Unlink, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 import { useTranslation } from "@/hooks/use-translation";
@@ -38,6 +39,10 @@ export default function SettingsPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isKicking, setIsKicking] = useState(false);
   const [isBanning, setIsBanning] = useState(false);
+  const [isAdminTopupOpen, setIsAdminTopupOpen] = useState(false);
+  const [adminTopupAmount, setAdminTopupAmount] = useState("");
+  const [isUnlinkingTg, setIsUnlinkingTg] = useState(false);
+  const [isUnlinkingMc, setIsUnlinkingMc] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -322,7 +327,27 @@ export default function SettingsPage() {
                       <Check className="h-4 w-4" />
                       {lang === "uz" ? "Telegram ulandi" : lang === "ru" ? "Telegram привязан" : "Telegram linked"}
                     </span>
-                    <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{profile.telegramUsername}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{profile.telegramUsername}</span>
+                      <button
+                        onClick={async () => {
+                          if (!uid) return;
+                          if (!confirm(lang === "uz" ? "Telegram akkauntni uzmoqchimisiz?" : "Unlink Telegram?")) return;
+                          setIsUnlinkingTg(true);
+                          const res = await unlinkTelegramAction(uid);
+                          toast({ title: res.success ? "✅" : "❌", description: res.message });
+                          if (res.success) {
+                            const data = await getUserProfile(uid, email);
+                            if (data) setProfile(data);
+                          }
+                          setIsUnlinkingTg(false);
+                        }}
+                        disabled={isUnlinkingTg}
+                        className="text-xs text-red-400 hover:text-red-300 underline font-bold"
+                      >
+                        {isUnlinkingTg ? "..." : (lang === "uz" ? "Uzish" : "Unlink")}
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <a
@@ -382,7 +407,20 @@ export default function SettingsPage() {
                   <CreditCard className="size-4" />
                   {isTopupLoading 
                     ? (lang === "uz" ? "TO'LDIRILMOQDA..." : lang === "ru" ? "ПОПОЛНЕНИЕ..." : "DEPOSITING...")
-                    : (lang === "uz" ? "BALANSNI TO'LDIRISH" : lang === "ru" ? "ПОПОЛНИТЬ БАЛАНС" : "TOP UP BALANCE")}
+                    : (lang === "uz" ? "AVTO TO'LOV (INPAY)" : lang === "ru" ? "АВТО ОПЛАТА (INPAY)" : "AUTO PAY (INPAY)")}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const amt = prompt(lang === "uz" ? "Qancha summa to'ldirmoqchisiz (UZS)?" : "How much to top up (UZS)?", "10000");
+                    if (!amt || isNaN(Number(amt))) return;
+                    const msg = `Salom Admin, mening Donat ID: ${uid}, Email: ${email}. Saytdagi balansimni ${Number(amt).toLocaleString()} UZS ga to'ldirmoqchiman.`;
+                    window.open(`https://t.me/neoterrauz_bot?text=${encodeURIComponent(msg)}`, "_blank");
+                  }}
+                  className="w-full font-bold h-12 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl flex items-center justify-center gap-2 border border-white/5"
+                >
+                  <Send className="size-4 text-purple-400" />
+                  {lang === "uz" ? "ADMIN ORQALI TO'LDIRISH (TELEGRAM)" : "TOP UP VIA ADMIN (TELEGRAM)"}
                 </Button>
               </form>
               
@@ -425,7 +463,27 @@ export default function SettingsPage() {
                     <>
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-zinc-500">Minecraft Nik</span>
-                        <span className="text-green-400 font-bold">{profile.minecraftUsername}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-400 font-bold">{profile.minecraftUsername}</span>
+                          <button
+                            onClick={async () => {
+                              if (!uid) return;
+                              if (!confirm(lang === "uz" ? "Minecraft akkauntni uzmoqchimisiz?" : "Unlink Minecraft?")) return;
+                              setIsUnlinkingMc(true);
+                              const res = await unlinkMinecraftAction(uid);
+                              toast({ title: res.success ? "✅" : "❌", description: res.message });
+                              if (res.success) {
+                                const data = await getUserProfile(uid, email);
+                                if (data) setProfile(data);
+                              }
+                              setIsUnlinkingMc(false);
+                            }}
+                            disabled={isUnlinkingMc}
+                            className="text-[10px] text-red-400 hover:text-red-300 underline font-bold"
+                          >
+                            {isUnlinkingMc ? "..." : (lang === "uz" ? "Uzish" : "Unlink")}
+                          </button>
+                        </div>
                       </div>
                       {profile?.minecraftUuid && (
                         <div className="flex justify-between items-center text-xs">

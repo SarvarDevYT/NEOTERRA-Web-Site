@@ -26,6 +26,73 @@ export async function updateMinecraftUsername(uid: string, username: string) {
   }
 }
 
+export async function unlinkTelegramAction(uid: string) {
+  if (!uid || !adminDb) return { success: false, message: "Parametrlar yetarsiz" }
+  try {
+    await adminDb.collection("users").doc(uid).update({
+      telegramUsername: FieldValue.delete(),
+      telegramChatId: FieldValue.delete(),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+    return { success: true, message: "Telegram akkaunt uzildi!" }
+  } catch (error: any) {
+    return { success: false, message: error.message || "Xatolik" }
+  }
+}
+
+export async function unlinkMinecraftAction(uid: string) {
+  if (!uid || !adminDb) return { success: false, message: "Parametrlar yetarsiz" }
+  try {
+    await adminDb.collection("users").doc(uid).update({
+      minecraftUsername: FieldValue.delete(),
+      minecraftUuid: FieldValue.delete(),
+      linkedServerId: FieldValue.delete(),
+      linkedAt: FieldValue.delete(),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+    return { success: true, message: "Minecraft akkaunt uzildi!" }
+  } catch (error: any) {
+    return { success: false, message: error.message || "Xatolik" }
+  }
+}
+
+export async function getAllUsersAdminAction() {
+  if (!adminDb) return []
+  try {
+    const snapshot = await adminDb.collection("users").get()
+    return snapshot.docs.map(doc => {
+      const data = doc.data()
+      return {
+        uid: doc.id,
+        email: data.email || "—",
+        role: data.role || "user",
+        minecraftUsername: data.minecraftUsername || null,
+        balance: data.balance !== undefined ? Number(data.balance) : 0,
+        telegramUsername: data.telegramUsername || null,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+      }
+    })
+  } catch (error) {
+    console.error("getAllUsersAdminAction error:", error)
+    return []
+  }
+}
+
+export async function updateUserBalanceAdminAction(uid: string, amount: number, isSet: boolean = false) {
+  if (!uid || !adminDb) return { success: false, message: "Parametrlar yetarsiz" }
+  try {
+    const userRef = adminDb.collection("users").doc(uid)
+    if (isSet) {
+      await userRef.update({ balance: amount, updatedAt: FieldValue.serverTimestamp() })
+    } else {
+      await userRef.update({ balance: FieldValue.increment(amount), updatedAt: FieldValue.serverTimestamp() })
+    }
+    return { success: true, message: "Balans yangilandi!" }
+  } catch (error: any) {
+    return { success: false, message: error.message || "Xatolik" }
+  }
+}
+
 /**
  * Foydalanuvchi profilini oladi.
  * Eslatma: Client Componentga Firestore ning Timestamp kabi classlarini to'g'ridan-to'g'ri o'tkazib bo'lmaydi.

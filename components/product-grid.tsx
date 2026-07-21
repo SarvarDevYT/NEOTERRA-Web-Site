@@ -147,11 +147,22 @@ export function ProductGrid() {
       return
     }
 
+    if (!minecraftUsername) {
+      toast({
+        title: lang === "uz" ? "Minecraft Akkaunt ulanmagan!" : lang === "ru" ? "Аккаунт Minecraft не привязан!" : "Minecraft Account not linked!",
+        description: lang === "uz" ? "Xarid qilish uchun avval Sozlamalarda Minecraft akkauntingizni uling." : lang === "ru" ? "Чтобы купить товар, привяжите аккаунт Minecraft в настройках." : "Please link your Minecraft account in Settings before purchasing.",
+        variant: "destructive",
+      });
+      router.push("/settings");
+      return;
+    }
+
     if (product.type === "token") {
       setTokenQuantity("")
     }
 
     setSelectedProduct(product)
+    setCustomNick(minecraftUsername)
     setIsPurchaseDialogOpen(true)
     setIsCopied(false)
   }
@@ -475,23 +486,16 @@ export function ProductGrid() {
           {selectedProduct && paymentType === "telegram" && (
             <div className="flex flex-col gap-4 mt-2">
               {!minecraftUsername && (
-                <div className="bg-zinc-950/40 p-4 rounded-lg border border-white/10">
-                  <label className="text-white text-xs mb-2 block font-black uppercase tracking-wider">{t("shop", "enterNickname")}:</label>
-                  <Input
-                    type="text"
-                    value={customNick}
-                    onChange={(e) => setCustomNick(e.target.value)}
-                    placeholder={t("shop", "nicknamePlaceholder")}
-                    className="w-full bg-black/30 text-white border-white/10 rounded-lg"
-                  />
-                  <span className="text-[10px] text-zinc-500 mt-1 block">
-                    {lang === "uz"
-                      ? "Bu nik avtomatik tarzda profil sozlamalaringizga saqlanadi."
-                      : lang === "ru"
-                      ? "Этот ник будет автоматически сохранен в настройках вашего профиля."
-                      : "This nickname will be automatically saved in your profile settings."
-                    }
+                <div className="bg-amber-500/10 p-4 rounded-lg border border-amber-500/20 text-center">
+                  <span className="text-amber-400 text-xs font-bold block mb-2">
+                    {lang === "uz" ? "⚠️ Minecraft akkauntingiz bog'lanmagan!" : "⚠️ Minecraft account is not linked!"}
                   </span>
+                  <Button
+                    onClick={() => router.push("/settings")}
+                    className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-9"
+                  >
+                    {lang === "uz" ? "Sozlamalarga O'tish" : "Go to Settings"}
+                  </Button>
                 </div>
               )}
 
@@ -557,23 +561,16 @@ export function ProductGrid() {
               </div>
 
               {!minecraftUsername && (
-                <div className="bg-zinc-950/40 p-4 rounded-lg border border-white/10">
-                  <label className="text-white text-xs mb-2 block font-black uppercase tracking-wider">{t("shop", "enterNickname")}:</label>
-                  <Input
-                    type="text"
-                    value={customNick}
-                    onChange={(e) => setCustomNick(e.target.value)}
-                    placeholder={t("shop", "nicknamePlaceholder")}
-                    className="w-full bg-black/30 text-white border-white/10 rounded-lg"
-                  />
-                  <span className="text-[10px] text-zinc-500 mt-1 block">
-                    {lang === "uz"
-                      ? "Bu nik avtomatik tarzda profil sozlamalaringizga saqlanadi."
-                      : lang === "ru"
-                      ? "Этот ник будет автоматически сохранен в настройках вашего профиля."
-                      : "This nickname will be automatically saved in your profile settings."
-                    }
+                <div className="bg-amber-500/10 p-4 rounded-lg border border-amber-500/20 text-center">
+                  <span className="text-amber-400 text-xs font-bold block mb-2">
+                    {lang === "uz" ? "⚠️ Minecraft akkauntingiz bog'lanmagan!" : "⚠️ Minecraft account is not linked!"}
                   </span>
+                  <Button
+                    onClick={() => router.push("/settings")}
+                    className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-9"
+                  >
+                    {lang === "uz" ? "Sozlamalarga O'tish" : "Go to Settings"}
+                  </Button>
                 </div>
               )}
 
