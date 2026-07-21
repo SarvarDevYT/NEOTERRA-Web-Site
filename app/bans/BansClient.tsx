@@ -68,22 +68,33 @@ export default function BansClient({ initialBans, initialMutes, dbError }: BansC
         </header>
 
         <Tabs defaultValue="bans" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto bg-white/5 border border-white/10 rounded-2xl h-14 p-1 mb-12">
-            <TabsTrigger
-              value="bans"
-              className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-widest italic"
-            >
-              <Gavel className="size-4 mr-2" />
-              {lang === "uz" ? "Banlar" : lang === "ru" ? "Баны" : "Bans"}
-            </TabsTrigger>
-            <TabsTrigger
-              value="mutes"
-              className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-widest italic"
-            >
-              <MessageSquare className="size-4 mr-2" />
-              {lang === "uz" ? "Mutes" : lang === "ru" ? "Муты" : "Mutes"}
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-12">
+            <TabsList className="bg-zinc-900/60 border border-white/10 p-1.5 rounded-full flex gap-2 h-auto backdrop-blur-md">
+              <TabsTrigger
+                value="bans"
+                className="px-8 py-3 rounded-full text-xs font-black uppercase tracking-wider transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20"
+              >
+                <Gavel className="size-4 mr-2 inline" />
+                {lang === "uz" ? "BANLAR" : lang === "ru" ? "БАНЫ" : "BANS"} ({initialBans.length})
+              </TabsTrigger>
+
+              <a
+                href="/anticheat"
+                className="px-8 py-3 rounded-full text-xs font-black uppercase tracking-wider transition-all bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-black flex items-center justify-center"
+              >
+                <ShieldAlert className="size-4 mr-2 inline" />
+                ANTICHEAT
+              </a>
+
+              <TabsTrigger
+                value="mutes"
+                className="px-8 py-3 rounded-full text-xs font-black uppercase tracking-wider transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20"
+              >
+                <MessageSquare className="size-4 mr-2 inline" />
+                {lang === "uz" ? "MUTELAR" : lang === "ru" ? "МУТЫ" : "MUTES"} ({initialMutes.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="bans" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid gap-4">
