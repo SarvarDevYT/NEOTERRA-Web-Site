@@ -90,3 +90,39 @@ export async function createInpayPaymentAction(
     return { success: false, message: error.message || "Something went wrong" }
   }
 }
+
+export async function syncPendingInpayPaymentsAction() {
+  if (!adminDb) return { success: false, message: "Database not configured" }
+
+  try {
+    const pendingSnap = await adminDb.collection("payments").where("status", "==", "pending").get()
+    if (pendingSnap.empty) {
+      return { success: true, message: "Kutish rejimidagi to'lovlar mavjud emas." }
+    }
+
+    let updatedCount = 0
+    for (const doc of pendingSnap.docs) {
+      const p = doc.data()
+      // Update payment status
+      await doc.ref.update({
+        status: "success",
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+
+      // Credit user balance if it was a balance topup
+      if (p.productId === "balance_topup" && p.userUid && p.amount) {
+        const userRef = adminDb.collection("users").doc(p.userUid)
+        await userRef.update({
+          balance: FieldValue.increment(Number(p.amount)),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+      }
+      updatedCount++
+    }
+
+    return { success: true, message: `${updatedCount} ta to'lov sinxronizatsiya qilindi va balans to'ldirildi!` }
+  } catch (error: any) {
+    console.error("syncPendingInpayPaymentsAction error:", error)
+    return { success: false, message: error.message || "Sinxronizatsiyada xatolik" }
+  }
+}

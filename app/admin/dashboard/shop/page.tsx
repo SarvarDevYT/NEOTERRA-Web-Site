@@ -21,10 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Plus, ShoppingBag, Edit2, Layers, Server } from "lucide-react";
+import { Trash2, Plus, ShoppingBag, Edit2, Layers, Server, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getProductsAction, createProductAction, deleteProductAction, updateProductAction } from "@/app/actions/products";
 import { getServersAction } from "@/app/actions/servers";
+import { syncPendingInpayPaymentsAction } from "@/app/actions/inpay";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 
 interface Product {
@@ -150,9 +151,22 @@ export default function AdminShopPage() {
     setIsEditOpen(true);
   };
 
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  async function handleSyncInpay() {
+    setIsSyncing(true);
+    const res = await syncPendingInpayPaymentsAction();
+    if (res.success) {
+      toast.success(res.message);
+    } else {
+      toast.error(res.message);
+    }
+    setIsSyncing(false);
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Do'kon Boshqaruvi
@@ -160,212 +174,223 @@ export default function AdminShopPage() {
           <p className="text-zinc-400">Server do'konidagi donatlarni qo'shing, o'chiring yoki tartiblang.</p>
         </div>
 
-        {/* Server Filter Tabs */}
-        {servers.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Server className="h-4 w-4 text-zinc-500" />
-            <button
-              onClick={() => setSelectedServer("")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                selectedServer === "" ? "bg-purple-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-              }`}
-            >
-              Barchasi
-            </button>
-            {servers.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSelectedServer(s.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                  selectedServer === s.id ? "bg-purple-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-                }`}
-              >
-                {s.displayName || s.name}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleSyncInpay}
+            disabled={isSyncing}
+            variant="outline"
+            className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-bold gap-2 rounded-xl"
+          >
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+            {isSyncing ? "Sinxronlanmoqda..." : "Eski To'lovlarni Sinxronlash"}
+          </Button>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
-              <Plus className="h-4 w-4" /> Yangi Donat
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
-            <DialogHeader className="relative">
-              <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />
-              <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter liquid-shadow relative z-10">
-                YANGI <span className="text-primary italic">DONAT</span>
-              </DialogTitle>
-              <DialogDescription className="text-zinc-400 font-medium">
-                Do'konga yangi donat mahsulotini qo'shish ma'lumotlarini to'ldiring.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddProduct} className="space-y-5 pt-4 relative z-10">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat nomi (UZ)</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Masalan: IMMORTAL"
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="name_ru" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat nomi (RU)</Label>
-                <Input
-                  id="name_ru"
-                  name="name_ru"
-                  placeholder="Masalan: IMMORTAL"
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="name_en" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat nomi (EN)</Label>
-                <Input
-                  id="name_en"
-                  name="name_en"
-                  placeholder="Masalan: IMMORTAL"
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat imkoniyatlari / Tavsifi (UZ)</Label>
-                <textarea
-                  id="description"
-                  name="description"
-                  placeholder="Imkoniyatlarni qatorma-qator yozing, masalan:&#10;- Fly uchish huquqi&#10;- 5 ta uylar soni&#10;- Har oy 10,000 tanga"
-                  className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description_ru" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat imkoniyatlari / Tavsifi (RU)</Label>
-                <textarea
-                  id="description_ru"
-                  name="description_ru"
-                  placeholder="Напишите возможности построчно, например:&#10;- Право на полет Fly&#10;- 5 точек дома&#10;- 10,000 коинов каждый месяц"
-                  className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description_en" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat imkoniyatlari / Tavsifi (EN)</Label>
-                <textarea
-                  id="description_en"
-                  name="description_en"
-                  placeholder="Write perks line-by-line, for example:&#10;- Fly ability&#10;- 5 home locations&#10;- 10,000 coins monthly"
-                  className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
+                <Plus className="h-4 w-4" /> Yangi Donat
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
+              <DialogHeader className="relative">
+                <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />
+                <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter liquid-shadow relative z-10">
+                  YANGI <span className="text-primary italic">DONAT</span>
+                </DialogTitle>
+                <DialogDescription className="text-zinc-400 font-medium">
+                  Do'konga yangi donat mahsulotini qo'shish ma'lumotlarini to'ldiring.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddProduct} className="space-y-5 pt-4 relative z-10">
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Narxi (UZS)</Label>
+                  <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat nomi (UZ)</Label>
                   <Input
-                    id="price"
-                    name="price"
-                    placeholder="Masalan: 70,000 UZS"
-                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    id="name"
+                    name="name"
+                    placeholder="Masalan: IMMORTAL"
+                    className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="order" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (Order)</Label>
+                  <Label htmlFor="name_ru" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat nomi (RU)</Label>
                   <Input
-                    id="order"
-                    name="order"
-                    type="number"
-                    defaultValue={products.length + 1}
-                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
+                    id="name_ru"
+                    name="name_ru"
+                    placeholder="Masalan: IMMORTAL"
+                    className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Kategoriya</Label>
-                  <Select name="category" defaultValue="RANKLAR">
-                    <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
-                      <SelectValue placeholder="Tanlang" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="name_en" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat nomi (EN)</Label>
+                  <Input
+                    id="name_en"
+                    name="name_en"
+                    placeholder="Masalan: IMMORTAL"
+                    className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                  />
                 </div>
+
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Turi (Type)</Label>
-                  <Select name="type" defaultValue="rank">
-                    <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
-                      <SelectValue placeholder="Tanlang" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
-                      {TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat imkoniyatlari / Tavsifi (UZ)</Label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    placeholder="Imkoniyatlarni qatorma-qator yozing, masalan:&#10;- Fly uchish huquqi&#10;- 5 ta uylar soni&#10;- Har oy 10,000 tanga"
+                    className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none"
+                  />
                 </div>
-              </div>
 
-              <ImageUploader
-                name="imageUrl"
-                value={addImageValue}
-                onChange={setAddImageValue}
-                label="Rasm (Fayl yoki URL)"
-              />
-              <p className="text-[9px] text-zinc-600 ml-1 -mt-1">Tayyor rasmlar: /images/[light-blue, pink, red, yellow, blue, green, orange, donate-case, kit-case].jpg</p>
+                <div className="space-y-2">
+                  <Label htmlFor="description_ru" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat imkoniyatlari / Tavsifi (RU)</Label>
+                  <textarea
+                    id="description_ru"
+                    name="description_ru"
+                    placeholder="Описание на русском..."
+                    className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="command" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Minecraft Buyruq (Server Konsolida)</Label>
-                <textarea
-                  id="command"
-                  name="command"
-                  placeholder="Masalan: lp user {username} parent add vip&#10;&#10;{username} — sotib olgan o'yinchining niki bilan almashtiriladi"
-                  className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none font-mono"
+                <div className="space-y-2">
+                  <Label htmlFor="description_en" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Donat imkoniyatlari / Tavsifi (EN)</Label>
+                  <textarea
+                    id="description_en"
+                    name="description_en"
+                    placeholder="Description in English..."
+                    className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Narxi (UZS)</Label>
+                    <Input
+                      name="price"
+                      placeholder="Masalan: 70,000 UZS"
+                      className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (Order)</Label>
+                    <Input
+                      name="order"
+                      type="number"
+                      defaultValue="0"
+                      className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Kategoriya</Label>
+                    <Select name="category" defaultValue="RANKLAR">
+                      <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
+                        <SelectValue placeholder="Tanlang" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Turi (Type)</Label>
+                    <Select name="type" defaultValue="rank">
+                      <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
+                        <SelectValue placeholder="Tanlang" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
+                        {TYPES.map((t) => (
+                          <SelectItem key={t.value} value={t.value} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <ImageUploader
+                  name="imageUrl"
+                  value={addImageValue}
+                  onChange={setAddImageValue}
+                  label="Rasm (Fayl yoki URL)"
                 />
-                <p className="text-[9px] text-zinc-600 ml-1">Bir nechta buyruq bo'lsa har birini yangi qatordan yozing. {'{username}'} — o'yinchi nikidir.</p>
-              </div>
+                <p className="text-[9px] text-zinc-600 ml-1 -mt-1">Tayyor rasmlar: /images/[light-blue, pink, red, yellow, blue, green, orange, donate-case, kit-case].jpg</p>
 
-              {servers.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Server</Label>
-                  <Select name="serverId" defaultValue={selectedServer || servers[0]?.id || ""}>
-                    <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
-                      <SelectValue placeholder="Server tanlang" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
-                      {servers.map((s) => (
-                        <SelectItem key={s.id} value={s.id} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
-                          {s.displayName || s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="command" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Minecraft Buyruq (Server Konsolida)</Label>
+                  <textarea
+                    id="command"
+                    name="command"
+                    placeholder="Masalan: lp user {username} parent add vip&#10;&#10;{username} — sotib olgan o'yinchining niki bilan almashtiriladi"
+                    className="w-full min-h-[80px] border border-white/10 focus:ring-1 focus:ring-primary bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10 p-3 text-sm focus:outline-none font-mono"
+                  />
+                  <p className="text-[9px] text-zinc-600 ml-1">Bir nechta buyruq bo'lsa har birini yangi qatordan yozing. {'{username}'} — o'yinchi nikidir.</p>
                 </div>
-              )}
 
-              <DialogFooter className="pt-4">
-                <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95">
-                  {isSubmitLoading ? "QO'SHILMOQDA..." : "DONATNI QO'SHISH"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                {servers.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Server</Label>
+                    <Select name="serverId" defaultValue={selectedServer || servers[0]?.id || ""}>
+                      <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
+                        <SelectValue placeholder="Server tanlang" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
+                        {servers.map((s) => (
+                          <SelectItem key={s.id} value={s.id} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
+                            {s.displayName || s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <DialogFooter className="pt-4">
+                  <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95">
+                    {isSubmitLoading ? "QO'SHILMOQDA..." : "DONATNI QO'SHISH"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      {/* Server Filter Tabs */}
+      {servers.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap bg-zinc-900/40 p-2.5 rounded-2xl border border-white/5">
+          <Server className="h-4 w-4 text-purple-400 ml-2" />
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">Filtrlash:</span>
+          <button
+            onClick={() => setSelectedServer("")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              selectedServer === "" ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30" : "bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700"
+            }`}
+          >
+            Barchasi
+          </button>
+          {servers.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setSelectedServer(s.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                selectedServer === s.id ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30" : "bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700"
+              }`}
+            >
+              {s.displayName || s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (

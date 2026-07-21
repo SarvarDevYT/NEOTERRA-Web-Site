@@ -203,12 +203,12 @@ export default function SettingsPage() {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="container mx-auto max-w-4xl py-32 px-4 relative z-10 flex-grow">
-        <header className="text-center mb-16">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-purple-400 mb-8 border border-white/10 backdrop-blur-xl shadow-2xl">
-            <Key className="h-10 w-10 animate-pulse" />
+      <div className="container mx-auto max-w-4xl py-20 md:py-32 px-4 relative z-10 flex-grow">
+        <header className="text-center mb-10 md:mb-16">
+          <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-purple-400 mb-6 md:mb-8 border border-white/10 backdrop-blur-xl shadow-2xl">
+            <Key className="h-8 w-8 md:h-10 md:w-10 animate-pulse" />
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-4 liquid-shadow">
+          <h1 className="text-3xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-4 liquid-shadow">
             {lang === "uz" ? (
               <>PROFIL <span className="text-purple-500">SOZLAMALARI</span></>
             ) : lang === "ru" ? (
