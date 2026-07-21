@@ -21,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Plus, ShoppingBag, Edit2, Layers } from "lucide-react";
+import { Trash2, Plus, ShoppingBag, Edit2, Layers, Server } from "lucide-react";
 import { toast } from "sonner";
 import { getProductsAction, createProductAction, deleteProductAction, updateProductAction } from "@/app/actions/products";
+import { getServersAction } from "@/app/actions/servers";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 
 interface Product {
@@ -40,6 +41,13 @@ interface Product {
   description_ru?: string;
   description_en?: string;
   command?: string;
+  serverId?: string;
+}
+
+interface ServerItem {
+  id: string;
+  name: string;
+  displayName: string;
 }
 
 const CATEGORIES = ["RANKLAR", "KEYS-LAR", "VALYUTA", "UNBAN/UNMUTE"];
@@ -53,6 +61,8 @@ const TYPES = [
 
 export default function AdminShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [servers, setServers] = useState<ServerItem[]>([]);
+  const [selectedServer, setSelectedServer] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   
   // Dialog states
@@ -66,12 +76,22 @@ export default function AdminShopPage() {
   const [editImageValue, setEditImageValue] = useState<string | null>(null);
 
   useEffect(() => {
+    loadServers();
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    fetchProducts();
+  }, [selectedServer]);
+
+  async function loadServers() {
+    const data = await getServersAction();
+    setServers(data as ServerItem[]);
+  }
+
   async function fetchProducts() {
     setIsLoading(true);
-    const data = await getProductsAction();
+    const data = await getProductsAction(selectedServer || undefined);
     setProducts(data as Product[]);
     setIsLoading(false);
   }
@@ -139,6 +159,32 @@ export default function AdminShopPage() {
           </h1>
           <p className="text-zinc-400">Server do'konidagi donatlarni qo'shing, o'chiring yoki tartiblang.</p>
         </div>
+
+        {/* Server Filter Tabs */}
+        {servers.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <Server className="h-4 w-4 text-zinc-500" />
+            <button
+              onClick={() => setSelectedServer("")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                selectedServer === "" ? "bg-purple-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+              }`}
+            >
+              Barchasi
+            </button>
+            {servers.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSelectedServer(s.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  selectedServer === s.id ? "bg-purple-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                }`}
+              >
+                {s.displayName || s.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -292,6 +338,24 @@ export default function AdminShopPage() {
                 />
                 <p className="text-[9px] text-zinc-600 ml-1">Bir nechta buyruq bo'lsa har birini yangi qatordan yozing. {'{username}'} — o'yinchi nikidir.</p>
               </div>
+
+              {servers.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Server</Label>
+                  <Select name="serverId" defaultValue={selectedServer || servers[0]?.id || ""}>
+                    <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold focus:ring-primary focus:bg-white/10 transition-all">
+                      <SelectValue placeholder="Server tanlang" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
+                      {servers.map((s) => (
+                        <SelectItem key={s.id} value={s.id} className="focus:bg-primary/20 focus:text-white rounded-lg m-1 cursor-pointer">
+                          {s.displayName || s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <DialogFooter className="pt-4">
                 <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95">
@@ -512,6 +576,24 @@ export default function AdminShopPage() {
                 label="Rasm tahrirlash"
               />
               <p className="text-[9px] text-zinc-600 ml-1 -mt-1">Tayyor rasmlar: /images/[light-blue, pink, red, yellow, blue, green].jpg</p>
+
+              {servers.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Server</Label>
+                  <Select name="serverId" defaultValue={editingProduct.serverId || ""}>
+                    <SelectTrigger className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold">
+                      <SelectValue placeholder="Server tanlang" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
+                      {servers.map((s) => (
+                        <SelectItem key={s.id} value={s.id} className="focus:bg-primary/20 rounded-lg m-1 cursor-pointer">
+                          {s.displayName || s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <DialogFooter className="pt-4">
                 <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20">

@@ -24,7 +24,14 @@ export async function GET(request: Request) {
     }
 
     const commandsRef = adminDb.collection("commands_queue")
-    const snapshot = await commandsRef.where("status", "==", "pending").limit(50).get()
+    const url = new URL(request.url)
+    const serverId = url.searchParams.get("serverId")
+
+    let query = commandsRef.where("status", "==", "pending")
+    if (serverId) {
+      query = commandsRef.where("status", "==", "pending").where("serverId", "==", serverId)
+    }
+    const snapshot = await query.limit(50).get()
 
     const commands = snapshot.docs.map(doc => {
       const data = doc.data()

@@ -4,11 +4,15 @@ import { adminDb } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
 import { FieldValue } from "firebase-admin/firestore";
 
-export async function getProductsAction() {
+export async function getProductsAction(serverId?: string) {
   if (!adminDb) return [];
   try {
-    const snapshot = await adminDb.collection("products").orderBy("order", "asc").get();
-    return snapshot.docs.map((doc) => {
+    let query: any = adminDb.collection("products").orderBy("order", "asc");
+    if (serverId) {
+      query = adminDb.collection("products").where("serverId", "==", serverId).orderBy("order", "asc");
+    }
+    const snapshot = await query.get();
+    return snapshot.docs.map((doc: any) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -21,6 +25,7 @@ export async function getProductsAction() {
         image: data.image || "",
         order: data.order || 0,
         command: data.command || "",
+        serverId: data.serverId || "",
         description: data.description || "",
         description_ru: data.description_ru || "",
         description_en: data.description_en || "",
@@ -45,6 +50,7 @@ export async function createProductAction(formData: FormData) {
   const image = String(formData.get("imageUrl") ?? formData.get("image") ?? "").trim();
   const order = parseInt(formData.get("order") as string) || 0;
   const command = String(formData.get("command") ?? "").trim();
+  const serverId = String(formData.get("serverId") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const description_ru = String(formData.get("description_ru") ?? "").trim();
   const description_en = String(formData.get("description_en") ?? "").trim();
@@ -64,6 +70,7 @@ export async function createProductAction(formData: FormData) {
       image,
       order,
       command,
+      serverId,
       description,
       description_ru,
       description_en,
@@ -107,6 +114,7 @@ export async function updateProductAction(id: string, formData: FormData) {
   const image = String(formData.get("imageUrl") ?? formData.get("image") ?? "").trim();
   const order = parseInt(formData.get("order") as string) || 0;
   const command = String(formData.get("command") ?? "").trim();
+  const serverId = String(formData.get("serverId") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const description_ru = String(formData.get("description_ru") ?? "").trim();
   const description_en = String(formData.get("description_en") ?? "").trim();
@@ -126,6 +134,7 @@ export async function updateProductAction(id: string, formData: FormData) {
       image,
       order,
       command,
+      serverId,
       description,
       description_ru,
       description_en,

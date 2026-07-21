@@ -101,6 +101,7 @@ export async function purchaseProductWithBalanceAction(
           username: username,
           userUid: userUid,
           productId: productId,
+          serverId: productData.serverId || "",
           amount: price,
           status: "pending",
           createdAt: FieldValue.serverTimestamp(),

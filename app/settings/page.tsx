@@ -15,7 +15,8 @@ import {
 import { auth as firebaseClientAuth } from "@/lib/firebase";
 import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-profile";
 import { createInpayPaymentAction } from "@/app/actions/inpay";
-import { Shield, Key, Mail, User, LogOut, Check, CreditCard } from "lucide-react";
+import { verifyLinkCode, kickPlayer, tempBanPlayer } from "@/app/actions/player-link";
+import { Shield, Key, Mail, User, LogOut, Check, CreditCard, Gamepad2, Ban, DoorOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 import { useTranslation } from "@/hooks/use-translation";
@@ -33,6 +34,10 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<any>(null);
   const [topupAmount, setTopupAmount] = useState("");
   const [isTopupLoading, setIsTopupLoading] = useState(false);
+  const [linkCode, setLinkCode] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isKicking, setIsKicking] = useState(false);
+  const [isBanning, setIsBanning] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -407,6 +412,107 @@ export default function SettingsPage() {
               </div>
 
               <div className="w-full space-y-3">
+                {/* Minecraft Account Linking Section */}
+                <div className="w-full p-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 space-y-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Gamepad2 className="size-4 text-purple-400" />
+                    <span className="text-xs font-black uppercase tracking-wider text-purple-400">
+                      {lang === "uz" ? "Minecraft Akkaunt" : lang === "ru" ? "Minecraft Аккаунт" : "Minecraft Account"}
+                    </span>
+                  </div>
+
+                  {profile?.minecraftUsername ? (
+                    <>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-zinc-500">Minecraft Nik</span>
+                        <span className="text-green-400 font-bold">{profile.minecraftUsername}</span>
+                      </div>
+                      {profile?.minecraftUuid && (
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-zinc-500">UUID</span>
+                          <span className="text-zinc-300 font-mono text-[10px] select-all">{profile.minecraftUuid}</span>
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          onClick={async () => {
+                            if (!uid) return;
+                            setIsKicking(true);
+                            const res = await kickPlayer(uid);
+                            toast({ title: res.success ? "✅" : "❌", description: res.message });
+                            setIsKicking(false);
+                          }}
+                          disabled={isKicking}
+                          className="flex-1 bg-yellow-600/20 border border-yellow-500/30 hover:bg-yellow-600 text-yellow-400 hover:text-white text-xs font-bold h-10 rounded-xl transition-all"
+                        >
+                          <DoorOpen className="size-3 mr-1" />
+                          {isKicking ? "..." : (lang === "uz" ? "Serverdan Chiqish" : lang === "ru" ? "Выйти с сервера" : "Leave Server")}
+                        </Button>
+                        <Button
+                          onClick={async () => {
+                            if (!uid) return;
+                            if (!confirm(lang === "uz" ? "Haqiqatan ham o'zingizga 30 daqiqalik ban bermoqchimisiz?" : "Are you sure you want to ban yourself for 30 minutes?")) return;
+                            setIsBanning(true);
+                            const res = await tempBanPlayer(uid);
+                            toast({ title: res.success ? "✅" : "❌", description: res.message });
+                            setIsBanning(false);
+                          }}
+                          disabled={isBanning}
+                          className="flex-1 bg-red-600/20 border border-red-500/30 hover:bg-red-600 text-red-400 hover:text-white text-xs font-bold h-10 rounded-xl transition-all"
+                        >
+                          <Ban className="size-3 mr-1" />
+                          {isBanning ? "..." : (lang === "uz" ? "30 min Ban" : "30 min Ban")}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-zinc-500 text-[11px]">
+                        {lang === "uz"
+                          ? "Serverda /link buyrug'ini yozing va olingan 6 raqamli kodni kiriting."
+                          : lang === "ru"
+                          ? "Введите /link на сервере и введите полученный 6-значный код."
+                          : "Type /link on the server and enter the 6-digit code."}
+                      </p>
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (!uid || !linkCode.trim()) return;
+                          setIsVerifying(true);
+                          const res = await verifyLinkCode(uid, linkCode.trim());
+                          toast({
+                            title: res.success ? "✅" : "❌",
+                            description: res.message,
+                            variant: res.success ? "default" : "destructive",
+                          });
+                          if (res.success) {
+                            setLinkCode("");
+                            const data = await getUserProfile(uid, email);
+                            if (data) setProfile(data);
+                          }
+                          setIsVerifying(false);
+                        }}
+                        className="flex gap-2"
+                      >
+                        <Input
+                          value={linkCode}
+                          onChange={(e) => setLinkCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                          placeholder="123456"
+                          maxLength={6}
+                          className="flex-1 h-10 bg-black/40 border-white/10 rounded-xl text-white font-mono text-center text-lg tracking-[0.5em] placeholder:tracking-normal placeholder:text-sm"
+                        />
+                        <Button
+                          type="submit"
+                          disabled={isVerifying || linkCode.length !== 6}
+                          className="bg-purple-600 hover:bg-purple-700 text-white font-bold h-10 px-4 rounded-xl transition-all"
+                        >
+                          {isVerifying ? "..." : (lang === "uz" ? "Tasdiqlash" : lang === "ru" ? "Подтвердить" : "Verify")}
+                        </Button>
+                      </form>
+                    </>
+                  )}
+                </div>
+
                 {isAdmin && (
                   <Button 
                     onClick={() => router.push("/admin/dashboard")}

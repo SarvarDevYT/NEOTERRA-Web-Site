@@ -13,6 +13,7 @@ import { purchaseProductWithBalanceAction } from "@/app/actions/shop-actions"
 import { ProductDialog } from "./product-dialog"
 import { createInpayPaymentAction } from "@/app/actions/inpay"
 import { getProductsAction } from "@/app/actions/products"
+import { getServersAction } from "@/app/actions/servers"
 
 
 import { useTranslation } from "@/hooks/use-translation"
@@ -32,6 +33,13 @@ interface Product {
   description?: string;
   description_ru?: string;
   description_en?: string;
+  serverId?: string;
+}
+
+interface ServerItem {
+  id: string;
+  name: string;
+  displayName: string;
 }
 
 export function ProductGrid() {
@@ -49,17 +57,31 @@ export function ProductGrid() {
   const [customNick, setCustomNick] = useState("")
   const [isPaying, setIsPaying] = useState(false)
   const [balance, setBalance] = useState<number | null>(null)
+  const [servers, setServers] = useState<ServerItem[]>([])
+  const [activeServer, setActiveServer] = useState<string>("")
   const { toast } = useToast()
   const { lang, t } = useTranslation()
 
   useEffect(() => {
+    async function loadServers() {
+      const data = await getServersAction();
+      setServers(data as ServerItem[]);
+      if (data.length > 0) {
+        setActiveServer(data[0].id);
+      }
+    }
+    loadServers();
+  }, []);
+
+  useEffect(() => {
     async function loadProducts() {
-      const data = await getProductsAction();
+      setLoading(true);
+      const data = await getProductsAction(activeServer || undefined);
       setProducts(data as Product[]);
       setLoading(false);
     }
     loadProducts();
-  }, []);
+  }, [activeServer]);
 
   useEffect(() => {
     async function loadBalance() {
@@ -283,6 +305,26 @@ export function ProductGrid() {
             <>SERVER <span className="text-primary liquid-shadow">STORE</span></>
           )}
         </h2>
+
+        {/* Server Tabs */}
+        {servers.length > 1 && (
+          <div className="flex flex-wrap justify-center gap-2 p-2 glass-effect rounded-[2.5rem] mb-2">
+            {servers.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setActiveServer(s.id)}
+                className={cn(
+                  "px-8 py-3 rounded-full text-xs font-black transition-all duration-500",
+                  activeServer === s.id
+                    ? "bg-purple-600 text-white shadow-xl shadow-purple-600/30"
+                    : "text-white/40 hover:text-white hover:bg-white/5",
+                )}
+              >
+                {s.displayName || s.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-wrap justify-center gap-2 p-2 glass-effect rounded-[2.5rem]">
           {CATEGORIES.map((cat) => {
