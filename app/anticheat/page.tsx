@@ -98,16 +98,28 @@ export default function AnticheatPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Filter logs by server, search, and risk
+  const [timeRange, setTimeRange] = useState<string>("7d") // "1h", "24h", "7d", "30d", "all"
+  const [timeDropdownOpen, setTimeDropdownOpen] = useState<boolean>(false)
+
+  // Filter logs by server, search, risk, and timeRange
   const filteredLogs = useMemo(() => {
+    const now = Date.now()
+    let timeThreshold = 0
+
+    if (timeRange === "1h") timeThreshold = now - 60 * 60 * 1000
+    else if (timeRange === "24h") timeThreshold = now - 24 * 60 * 60 * 1000
+    else if (timeRange === "7d") timeThreshold = now - 7 * 24 * 60 * 60 * 1000
+    else if (timeRange === "30d") timeThreshold = now - 30 * 24 * 60 * 60 * 1000
+
     return logs.filter((log) => {
       const matchesServer = !selectedServer || log.serverId === selectedServer
       const matchesSearch = log.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             log.checkName.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesRisk = filterRisk === "ALL" || log.riskLevel.toUpperCase() === filterRisk
-      return matchesServer && matchesSearch && matchesRisk
+      const matchesTime = timeThreshold === 0 || log.timestamp >= timeThreshold
+      return matchesServer && matchesSearch && matchesRisk && matchesTime
     })
-  }, [logs, selectedServer, searchQuery, filterRisk])
+  }, [logs, selectedServer, searchQuery, filterRisk, timeRange])
 
   // REAL DYNAMIC COMPUTATIONS FOR CHARTS FROM REAL LOGS DATA:
 
@@ -331,9 +343,51 @@ export default function AnticheatPage() {
         <div className="glass-effect rounded-2xl p-6 border border-white/10 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-white/90">Umumiy ko'rinish</h2>
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white/60">
-              <span>Oxirgi 7 kun</span>
-              <ChevronDown className="size-3.5" />
+            
+            {/* Interactive Minestax-style Time Range Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setTimeDropdownOpen(!timeDropdownOpen)}
+                className="flex items-center gap-2 bg-zinc-900 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-white/80 hover:border-amber-500/50 transition-all shadow-md"
+              >
+                <span>
+                  {timeRange === "1h" && "Oxirgi soat"}
+                  {timeRange === "24h" && "Oxirgi 24 soat"}
+                  {timeRange === "7d" && "Oxirgi 7 kun"}
+                  {timeRange === "30d" && "Oxirgi 30 kun"}
+                  {timeRange === "all" && "Barcha vaqt"}
+                </span>
+                <ChevronDown className={cn("size-3.5 text-amber-400 transition-transform", timeDropdownOpen && "rotate-180")} />
+              </button>
+
+              {timeDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-44 bg-zinc-900/95 border border-white/10 rounded-xl p-1.5 shadow-2xl z-50 backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
+                  {[
+                    { id: "1h", label: "Oxirgi soat" },
+                    { id: "24h", label: "Oxirgi 24 soat" },
+                    { id: "7d", label: "Oxirgi 7 kun" },
+                    { id: "30d", label: "Oxirgi 30 kun" },
+                    { id: "all", label: "Barcha vaqt" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => {
+                        setTimeRange(opt.id)
+                        setTimeDropdownOpen(false)
+                      }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-between",
+                        timeRange === opt.id
+                          ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          : "text-white/70 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      <span>{opt.label}</span>
+                      {timeRange === opt.id && <span className="text-amber-400">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
