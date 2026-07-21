@@ -16,6 +16,7 @@ import {
 import { Users, Search, Wallet, Shield, Send, RefreshCw, Gamepad2, SendHorizontal, ShieldAlert, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { getAllUsersAdminAction, updateUserBalanceAdminAction, updateUserRoleAdminAction } from "@/app/actions/player-profile";
+import { syncPendingInpayPaymentsAction } from "@/app/actions/inpay";
 
 interface UserItem {
   uid: string;
@@ -97,9 +98,23 @@ export default function AdminUsersPage() {
     setIsSubmitting(false);
   }
 
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  async function handleSyncInpay() {
+    setIsSyncing(true);
+    const res = await syncPendingInpayPaymentsAction();
+    if (res.success) {
+      toast.success(res.message);
+      fetchUsers();
+    } else {
+      toast.error(res.message);
+    }
+    setIsSyncing(false);
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Foydalanuvchilar Boshqaruvi
@@ -108,9 +123,22 @@ export default function AdminUsersPage() {
             Foydalanuvchilar ro'yxati, profil ma'lumotlari va balansni admin orqali to'ldirish.
           </p>
         </div>
-        <Button onClick={fetchUsers} variant="outline" className="border-white/10 text-white hover:bg-white/5 gap-2">
-          <RefreshCw className="h-4 w-4" /> Yangilash
-        </Button>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            onClick={handleSyncInpay}
+            disabled={isSyncing}
+            variant="outline"
+            className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-bold gap-2 rounded-xl"
+          >
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+            {isSyncing ? "Sinxronlanmoqda..." : "Eski To'lovlarni Sinxronlash"}
+          </Button>
+
+          <Button onClick={fetchUsers} variant="outline" className="border-white/10 text-white hover:bg-white/5 gap-2 rounded-xl">
+            <RefreshCw className="h-4 w-4" /> Yangilash
+          </Button>
+        </div>
       </div>
 
       {/* Search Bar */}

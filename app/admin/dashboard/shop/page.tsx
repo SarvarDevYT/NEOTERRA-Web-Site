@@ -151,19 +151,6 @@ export default function AdminShopPage() {
     setIsEditOpen(true);
   };
 
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  async function handleSyncInpay() {
-    setIsSyncing(true);
-    const res = await syncPendingInpayPaymentsAction();
-    if (res.success) {
-      toast.success(res.message);
-    } else {
-      toast.error(res.message);
-    }
-    setIsSyncing(false);
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -175,16 +162,6 @@ export default function AdminShopPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            onClick={handleSyncInpay}
-            disabled={isSyncing}
-            variant="outline"
-            className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-bold gap-2 rounded-xl"
-          >
-            <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
-            {isSyncing ? "Sinxronlanmoqda..." : "Eski To'lovlarni Sinxronlash"}
-          </Button>
-
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
