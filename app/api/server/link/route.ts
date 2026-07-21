@@ -2,8 +2,24 @@ import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 
+function validateAuth(request: Request) {
+  const authHeader = request.headers.get("Authorization")
+  const serverKey = process.env.SERVER_API_KEY || "NEOTERRA_DEFAULT_SECRET_KEY"
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return false
+  }
+
+  const token = authHeader.substring(7)
+  return token === serverKey
+}
+
 export async function POST(request: Request) {
   try {
+    if (!validateAuth(request)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     if (!adminDb) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
     }
@@ -18,25 +34,6 @@ export async function POST(request: Request) {
     // Validate code format (6 digits)
     if (!/^\d{6}$/.test(code)) {
       return NextResponse.json({ error: "Invalid code format" }, { status: 400 })
-    }
-
-    // Validate server exists
-    const serverDoc = await adminDb.collection("servers").doc(serverId).get()
-    if (!serverDoc.exists) {
-      return NextResponse.json({ error: "Server not found" }, { status: 404 })
-    }
-
-    // Verify HMAC signature from plugin
-    const serverData = serverDoc.data()
-    const secretKey = serverData?.secretKey || ""
-    const authHeader = request.headers.get("Authorization")
-    if (!authHeader || authHeader !== `Bearer ${secretKey}`) {
-      // Also check X-Signature for HMAC auth
-      const xSignature = request.headers.get("X-Signature")
-      const xServerId = request.headers.get("X-Server-ID")
-      if (!xSignature || xServerId !== serverId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-      }
     }
 
     // Store the link code in Firestore with expiry

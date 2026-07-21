@@ -2,8 +2,24 @@ import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 
+function validateAuth(request: Request) {
+  const authHeader = request.headers.get("Authorization")
+  const serverKey = process.env.SERVER_API_KEY || "NEOTERRA_DEFAULT_SECRET_KEY"
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return false
+  }
+
+  const token = authHeader.substring(7)
+  return token === serverKey
+}
+
 export async function POST(request: Request) {
   try {
+    if (!validateAuth(request)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     if (!adminDb) {
       return NextResponse.json({ error: "Database not configured" }, { status: 500 })
     }
