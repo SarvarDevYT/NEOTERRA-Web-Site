@@ -319,25 +319,38 @@ export function ProductGrid() {
           )}
         </h2>
 
-        {/* Server Tabs */}
-        {servers.length > 1 && (
-          <div className="flex flex-wrap justify-center gap-2 p-2 glass-effect rounded-[2.5rem] mb-2">
-            {servers.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setActiveServer(s.id)}
-                className={cn(
-                  "px-8 py-3 rounded-full text-xs font-black transition-all duration-500",
-                  activeServer === s.id
-                    ? "bg-purple-600 text-white shadow-xl shadow-purple-600/30"
-                    : "text-white/40 hover:text-white hover:bg-white/5",
-                )}
-              >
-                {s.displayName || s.name}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Server Tabs Filter */}
+        <div className="flex flex-wrap justify-center items-center gap-3 p-2.5 glass-effect rounded-[2.5rem] mb-6 border border-white/10 shadow-2xl">
+          <span className="text-[11px] font-black uppercase tracking-wider text-white/50 px-3">
+            {lang === "uz" ? "🎮 SERVER:" : lang === "ru" ? "🎮 СЕРВЕР:" : "🎮 SERVER:"}
+          </span>
+          <button
+            onClick={() => setActiveServer("")}
+            className={cn(
+              "px-6 py-2.5 rounded-full text-xs font-black transition-all duration-300 uppercase tracking-wider",
+              activeServer === ""
+                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/40 scale-105"
+                : "text-white/50 hover:text-white hover:bg-white/10"
+            )}
+          >
+            {lang === "uz" ? "BARCHA SERVERLAR" : lang === "ru" ? "ВСЕ СЕРВЕРА" : "ALL SERVERS"}
+          </button>
+
+          {servers.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveServer(s.id)}
+              className={cn(
+                "px-6 py-2.5 rounded-full text-xs font-black transition-all duration-300 uppercase tracking-wider",
+                activeServer === s.id
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/40 scale-105"
+                  : "text-white/50 hover:text-white hover:bg-white/10"
+              )}
+            >
+              {s.displayName || s.name}
+            </button>
+          ))}
+        </div>
 
         <div className="flex flex-wrap justify-center gap-2 p-2 glass-effect rounded-[2.5rem]">
           {CATEGORIES.map((cat) => {
@@ -380,12 +393,20 @@ export function ProductGrid() {
           {filteredProducts.map((product) => {
             const displayName = lang === "ru" && product.name_ru ? product.name_ru : (lang === "en" && product.name_en ? product.name_en : product.name)
             const displayDesc = lang === "ru" && product.description_ru ? product.description_ru : (lang === "en" && product.description_en ? product.description_en : product.description)
+            const matchedServer = servers.find((s) => s.id === product.serverId)
+
             return (
               <div
                 key={product.id}
                 className="group relative glass-effect rounded-[2.5rem] p-8 flex flex-col justify-between transition-all duration-700 hover:scale-[1.02] hover:bg-white/[0.08] overflow-hidden"
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                {matchedServer && (
+                  <div className="absolute top-4 right-4 bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full z-10">
+                    🎮 {matchedServer.displayName || matchedServer.name}
+                  </div>
+                )}
 
                 <div>
                   <div className="mb-6 group-hover:scale-110 transition-transform duration-700 ease-out flex justify-center drop-shadow-2xl h-24 relative">
