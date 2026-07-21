@@ -244,8 +244,9 @@ export default function AnticheatPage() {
   const lastPunishment = filteredLogs.find((l) => l.riskLevel === "critical")
 
   return (
-    <main className="min-h-screen bg-[#0d0d0f] text-white pt-24 pb-16">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="flex flex-col min-h-screen bg-[#0d0d0f] text-white">
+      <main className="flex-1 pt-32 pb-20">
+        <div className="container mx-auto px-4 max-w-6xl">
         
         {/* Sub Navigation (Bans | Anticheat | Mutes) */}
         <div className="flex justify-center mb-10">
@@ -765,9 +766,9 @@ export default function AnticheatPage() {
             )}
           </div>
         </div>
-
       </div>
-      <Footer />
     </main>
-  )
+    <Footer />
+  </div>
+)
 }
