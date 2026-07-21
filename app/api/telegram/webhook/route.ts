@@ -190,7 +190,7 @@ export async function POST(request: Request) {
         `💬 <b>Qo'llab-quvvatlash Xizmati:</b>\n\n` +
         `Savollaringiz yoki to'lov bo'yicha muammolar bo'lsa rasmiy qo'llab-quvvatlash xizmati bilan bog'laning:\n\n` +
         `📢 <b>Rasmiy Kanal:</b> @NeoTerraUz\n` +
-        `👨‍💻 <b>Admin:</b> @SarvarDevYT\n` +
+        `👨‍💻 <b>Admin:</b> @NeoTerraAdmin\n` +
         `🌐 <b>Sayt:</b> <a href="https://site.neoterra.uz">site.neoterra.uz</a>`
       )
     }

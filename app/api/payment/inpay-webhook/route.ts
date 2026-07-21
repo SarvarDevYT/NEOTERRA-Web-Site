@@ -59,6 +59,9 @@ export async function POST(request: Request) {
         }
 
         // 3. Send User Telegram notification if telegramChatId is linked
+        const botToken = process.env.TELEGRAM_BOT_TOKEN
+        const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
+
         if (botToken && paymentData.userUid) {
           try {
             const userDoc = await adminDb.collection("users").doc(paymentData.userUid).get()
