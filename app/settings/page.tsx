@@ -229,56 +229,6 @@ export default function SettingsPage() {
         <div className="grid gap-8 md:grid-cols-12">
           <div className="md:col-span-7 space-y-6">
             <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
-              <CardHeader className="p-0 mb-6">
-                <CardTitle className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
-                  <User className="h-5 w-5 text-purple-500" />
-                  {lang === "uz" ? "Minecraft Nikni Bog'lash" : lang === "ru" ? "Привязать никнейм Minecraft" : "Link Minecraft Nickname"}
-                </CardTitle>
-                <CardDescription className="text-zinc-400 font-medium">
-                  {lang === "uz"
-                    ? "Serverdagi do'kondan foydalanish va statistikangizni ko'rish uchun nikingizni kiriting."
-                    : lang === "ru"
-                    ? "Введите никнейм для доступа к магазину и просмотра статистики."
-                    : "Enter your nickname to access the store and view your stats."}
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={handleLinkNickname} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="nickname" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
-                    Minecraft Nik
-                  </label>
-                  <Input
-                    id="nickname"
-                    placeholder="Masalan: SarvarGamer"
-                    value={nickInput}
-                    onChange={(e) => setNickInput(e.target.value)}
-                    className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                    required
-                    disabled={isLinking}
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full font-black tracking-widest h-12 text-sm bg-primary hover:bg-primary/90 rounded-xl transition-all active:scale-95" 
-                  disabled={isLinking}
-                >
-                  {isLinking
-                    ? lang === "uz"
-                      ? "SAQLANMOQDA..."
-                      : lang === "ru"
-                      ? "СОХРАНЕНИЕ..."
-                      : "SAVING..."
-                    : lang === "uz"
-                    ? "SAQLASH"
-                    : lang === "ru"
-                    ? "СОХРАНИТЬ"
-                    : "SAVE"}
-                </Button>
-              </form>
-            </Card>
-
-            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">

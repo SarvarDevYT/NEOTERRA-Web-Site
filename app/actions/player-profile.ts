@@ -93,6 +93,17 @@ export async function updateUserBalanceAdminAction(uid: string, amount: number, 
   }
 }
 
+export async function updateUserRoleAdminAction(uid: string, role: "admin" | "user") {
+  if (!uid || !adminDb) return { success: false, message: "Parametrlar yetarsiz" }
+  try {
+    const userRef = adminDb.collection("users").doc(uid)
+    await userRef.update({ role, updatedAt: FieldValue.serverTimestamp() })
+    return { success: true, message: `Foydalanuvchi rolining holati ${role.toUpperCase()} ga o'zgartirildi!` }
+  } catch (error: any) {
+    return { success: false, message: error.message || "Xatolik" }
+  }
+}
+
 /**
  * Foydalanuvchi profilini oladi.
  * Eslatma: Client Componentga Firestore ning Timestamp kabi classlarini to'g'ridan-to'g'ri o'tkazib bo'lmaydi.

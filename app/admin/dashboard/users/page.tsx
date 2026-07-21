@@ -13,9 +13,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Users, Search, Wallet, Shield, Send, RefreshCw, Gamepad2, SendHorizontal } from "lucide-react";
+import { Users, Search, Wallet, Shield, Send, RefreshCw, Gamepad2, SendHorizontal, ShieldAlert, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { getAllUsersAdminAction, updateUserBalanceAdminAction } from "@/app/actions/player-profile";
+import { getAllUsersAdminAction, updateUserBalanceAdminAction, updateUserRoleAdminAction } from "@/app/actions/player-profile";
 
 interface UserItem {
   uid: string;
@@ -57,6 +57,23 @@ export default function AdminUsersPage() {
       (u.telegramUsername && u.telegramUsername.toLowerCase().includes(q))
     );
   });
+
+  async function handleToggleRole(user: UserItem) {
+    const newRole = user.role === "admin" ? "user" : "admin";
+    const confirmMsg = user.role === "admin" 
+      ? `"${user.email}" dan adminlik huquqini olib tashlamoqchimisiz?`
+      : `"${user.email}" ga adminlik huquqini bermoqchimisiz?`;
+
+    if (!confirm(confirmMsg)) return;
+
+    const res = await updateUserRoleAdminAction(user.uid, newRole);
+    if (res.success) {
+      toast.success(res.message);
+      fetchUsers();
+    } else {
+      toast.error(res.message);
+    }
+  }
 
   async function handleBalanceSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -146,21 +163,41 @@ export default function AdminUsersPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 self-end md:self-center">
-                  <div className="text-right">
+                <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+                  <div className="text-right mr-2">
                     <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 block">Balans</span>
                     <span className="text-lg font-black text-emerald-400">
                       {user.balance.toLocaleString()} UZS
                     </span>
                   </div>
                   <Button
+                    onClick={() => handleToggleRole(user)}
+                    variant="outline"
+                    size="sm"
+                    className={`rounded-xl font-bold text-xs gap-1.5 ${
+                      user.role === "admin"
+                        ? "border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black"
+                        : "border-purple-500/30 text-purple-400 hover:bg-purple-600 hover:text-white"
+                    }`}
+                  >
+                    {user.role === "admin" ? (
+                      <>
+                        <ShieldAlert className="h-3.5 w-3.5" /> Oddiy qilish
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="h-3.5 w-3.5" /> Admin qilish
+                      </>
+                    )}
+                  </Button>
+                  <Button
                     onClick={() => {
                       setSelectedUser(user);
                       setIsBalanceDialogOpen(true);
                     }}
-                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold gap-2 rounded-xl"
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold gap-2 rounded-xl text-xs"
                   >
-                    <Wallet className="h-4 w-4" /> Balans Qo'shish
+                    <Wallet className="h-4 w-4" /> Balans
                   </Button>
                 </div>
               </CardContent>
