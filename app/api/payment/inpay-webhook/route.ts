@@ -58,10 +58,34 @@ export async function POST(request: Request) {
           console.log(`✅ User ${paymentData.userUid} balance incremented by ${paymentData.amount}`)
         }
 
-        // 3. Send Telegram Bot notification if credentials are provided
-        const botToken = process.env.TELEGRAM_BOT_TOKEN
-        const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID
+        // 3. Send User Telegram notification if telegramChatId is linked
+        if (botToken && paymentData.userUid) {
+          try {
+            const userDoc = await adminDb.collection("users").doc(paymentData.userUid).get()
+            const uData = userDoc.data()
+            if (uData && uData.telegramChatId) {
+              const userMsg = 
+                `💰 <b>BALANSINGIZ MUVAFFAQIYATLI TO'LDIRILDI!</b>\n\n` +
+                `💳 <b>To'ldirilgan summa:</b> <code>${Number(paymentData.amount || amount || 0).toLocaleString()} UZS</code>\n` +
+                `💵 <b>Joriy balans:</b> <code>${Number(uData.balance || 0).toLocaleString()} UZS</code>\n\n` +
+                `<i>Rahmat! Donatlarni sotib olishingiz mumkin! 🛒</i>`
 
+              fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  chat_id: uData.telegramChatId,
+                  text: userMsg,
+                  parse_mode: "HTML",
+                }),
+              }).catch(e => console.error("User TG topup notify err:", e))
+            }
+          } catch (e) {
+            console.error("User fetch for TG notify err:", e)
+          }
+        }
+
+        // 4. Send Admin Telegram Bot notification
         if (botToken && adminChatId) {
           let messageText = ""
           if (paymentData.productId === "balance_topup") {

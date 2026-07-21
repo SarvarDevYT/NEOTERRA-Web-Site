@@ -117,8 +117,36 @@ export async function purchaseProductWithBalanceAction(
         })
       }
 
-      return { success: true, price }
+      return { success: true, price, userDocData: userData, productName: productData.name }
     })
+
+    // Send Telegram Notification to user if they have linked Telegram account
+    if (result.success && result.userDocData?.telegramChatId) {
+      const botToken = process.env.TELEGRAM_BOT_TOKEN
+      if (botToken) {
+        const userTgMessage = 
+          `🎉 <b>XARID QILINGAN DONAT MUVAFFAQIYATLI FAOLLASHTIRILDI!</b>\n\n` +
+          `📦 <b>Mahsulot:</b> <code>${result.productName}</code>\n` +
+          `💰 <b>Sarf qilingan summa:</b> <code>${result.price.toLocaleString()} UZS</code>\n` +
+          `🎮 <b>Minecraft Nik:</b> <code>${username}</code>\n` +
+          `⏰ <b>Sana:</b> <code>${new Date().toLocaleString("uz-UZ")}</code>\n\n` +
+          `<i>Rahmat! Serverda yaxshi o'yin tilaymiz! 🎮</i>`
+
+        try {
+          fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: result.userDocData.telegramChatId,
+              text: userTgMessage,
+              parse_mode: "HTML",
+            }),
+          }).catch(err => console.error("User Telegram notification fetch err:", err))
+        } catch (e) {
+          console.error("User Telegram notification err:", e)
+        }
+      }
+    }
 
     return {
       success: true,
