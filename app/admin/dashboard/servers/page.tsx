@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Trash2, Plus, Server, Eye, EyeOff, Copy, Check, RefreshCw } from "lucide-react";
+import { Trash2, Plus, Server, Copy, Check, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { getAllServersAction, createServerAction, updateServerAction, deleteServerAction } from "@/app/actions/servers";
 
@@ -24,16 +24,6 @@ interface ServerItem {
   displayName: string;
   order: number;
   isActive: boolean;
-  secretKey: string;
-}
-
-function generateSecretKey(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-  let key = "";
-  for (let i = 0; i < 32; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return key;
 }
 
 export default function AdminServersPage() {
@@ -41,9 +31,9 @@ export default function AdminServersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [generatedKey, setGeneratedKey] = useState(generateSecretKey());
-  const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedKey, setCopiedKey] = useState(false);
+
+  const GLOBAL_SECRET_KEY = "neoterra2026Nsarvar2010Sneoterrateamuz";
 
   useEffect(() => {
     fetchServers();
@@ -64,7 +54,6 @@ export default function AdminServersPage() {
     if (result.success) {
       toast.success("Server qo'shildi!");
       setIsDialogOpen(false);
-      setGeneratedKey(generateSecretKey());
       fetchServers();
     } else {
       toast.error(result.message);
@@ -96,17 +85,11 @@ export default function AdminServersPage() {
     }
   }
 
-  function toggleKeyVisibility(id: string) {
-    const next = new Set(visibleKeys);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setVisibleKeys(next);
-  }
-
-  function copyToClipboard(text: string, id: string) {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  function copyGlobalKey() {
+    navigator.clipboard.writeText(GLOBAL_SECRET_KEY);
+    setCopiedKey(true);
+    toast.success("Secret Key nusxalandi!");
+    setTimeout(() => setCopiedKey(false), 2000);
   }
 
   return (
@@ -116,7 +99,7 @@ export default function AdminServersPage() {
           <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Serverlar Boshqaruvi
           </h1>
-          <p className="text-zinc-400">Minecraft serverlarni qo'shing va boshqaring. Har bir serverning alohida secret key'i bor.</p>
+          <p className="text-zinc-400">Minecraft serverlarni qo&apos;shing va boshqaring.</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -131,7 +114,7 @@ export default function AdminServersPage() {
                 YANGI <span className="text-purple-500">SERVER</span>
               </DialogTitle>
               <DialogDescription className="text-zinc-400 font-medium">
-                Minecraft serveringizni saytga qo'shing.
+                Minecraft serveringizni saytga qo&apos;shing.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddServer} className="space-y-4 pt-2">
@@ -144,7 +127,7 @@ export default function AdminServersPage() {
                   pattern="[a-z0-9_-]+"
                   className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold font-mono"
                 />
-                <p className="text-[9px] text-zinc-600 ml-1">Plugin config.yml dagi server-id bilan bir xil bo'lishi kerak!</p>
+                <p className="text-[9px] text-zinc-600 ml-1">Plugin config.yml dagi server-id bilan bir xil bo&apos;lishi kerak!</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -158,7 +141,7 @@ export default function AdminServersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Ko'rsatiladigan Nomi</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Ko&apos;rsatiladigan Nomi</Label>
                   <Input
                     name="displayName"
                     placeholder="🌍 Survival"
@@ -177,31 +160,6 @@ export default function AdminServersPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                  🔐 Secret Key (xavfsizlik kaliti)
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    name="secretKey"
-                    defaultValue={generatedKey}
-                    required
-                    minLength={16}
-                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-mono text-sm flex-1"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => setGeneratedKey(generateSecretKey())}
-                    className="bg-zinc-800 hover:bg-zinc-700 h-12 px-3 rounded-2xl"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-[9px] text-amber-500 ml-1 font-bold">
-                  ⚠️ Bu kalitni plugin'ning config.yml dagi "api.secret-key" ga nusxalang!
-                </p>
-              </div>
-
               <DialogFooter className="pt-2">
                 <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-purple-600 hover:bg-purple-700 font-black tracking-widest italic rounded-2xl">
                   {isSubmitting ? "QO'SHILMOQDA..." : "SERVERNI QO'SHISH"}
@@ -212,16 +170,44 @@ export default function AdminServersPage() {
         </Dialog>
       </div>
 
+      {/* Global Secret Key Card */}
+      <Card className="border-purple-500/20 bg-purple-500/5 rounded-2xl">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-black text-sm uppercase tracking-wider">🔐 Global Secret Key</h3>
+              <p className="text-zinc-500 text-xs">Barcha serverlar uchun bitta kalit ishlatiladi</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-black/30 rounded-xl border border-white/5">
+            <code className="text-purple-300 font-mono text-sm flex-1 select-all">{GLOBAL_SECRET_KEY}</code>
+            <button
+              onClick={copyGlobalKey}
+              className="text-zinc-500 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
+            >
+              {copiedKey ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+            </button>
+          </div>
+          <p className="text-amber-500/80 text-[10px] mt-2 font-bold ml-1">
+            ⚠️ Bu kalitni har bir Minecraft server&apos;dagi plugin <code className="text-blue-400">config.yml</code> → <code className="text-blue-400">api.secret-key</code> ga qo&apos;ying. Vercel&apos;da ham <code className="text-blue-400">SERVER_API_KEY</code> sifatida o&apos;rnatilgan.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Info Card */}
       <Card className="border-blue-500/20 bg-blue-500/5 rounded-2xl">
         <CardContent className="p-4 text-sm text-blue-300 space-y-2">
           <p className="font-bold text-blue-400">📋 Qanday ishlaydi:</p>
           <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-400">
-            <li>Shu yerda yangi server qo'shing va <strong className="text-white">Secret Key</strong> avtomatik yaratiladi</li>
+            <li>Shu yerda yangi server qo&apos;shing (faqat ID va nom kerak)</li>
             <li>Plugin JAR faylni Minecraft server <code className="text-blue-400">plugins/</code> papkasiga joylashtiring</li>
-            <li>Plugin <code className="text-blue-400">config.yml</code> da <strong className="text-white">server-id</strong> va <strong className="text-white">secret-key</strong> ni shu sahifadagiga mos o'zgartiring</li>
-            <li>Serverni qayta ishga tushiring yoki <code className="text-blue-400">/neoterra reload</code> buyrug'ini yozing</li>
-            <li>Admin → Do'kon sahifasida server tanlab donatlarni qo'shing</li>
+            <li>Plugin <code className="text-blue-400">config.yml</code> da <strong className="text-white">server-id</strong> ni shu sahifadagi ID bilan bir xil qiling</li>
+            <li><code className="text-blue-400">config.yml</code> dagi <strong className="text-white">secret-key</strong> ga yuqoridagi global kalitni nusxalang</li>
+            <li>Serverni qayta ishga tushiring yoki <code className="text-blue-400">/neoterra reload</code> buyrug&apos;ini yozing</li>
+            <li>Admin → Do&apos;kon sahifasida server tanlab donatlarni qo&apos;shing</li>
           </ol>
         </CardContent>
       </Card>
@@ -233,8 +219,8 @@ export default function AdminServersPage() {
         <Card className="border-white/5 bg-zinc-900/50 rounded-2xl">
           <CardContent className="text-center py-16">
             <Server className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-500 font-bold">Hali hech qanday server qo'shilmagan</p>
-            <p className="text-zinc-600 text-sm mt-1">Yuqoridagi "Yangi Server" tugmasini bosing</p>
+            <p className="text-zinc-500 font-bold">Hali hech qanday server qo&apos;shilmagan</p>
+            <p className="text-zinc-600 text-sm mt-1">Yuqoridagi &quot;Yangi Server&quot; tugmasini bosing</p>
           </CardContent>
         </Card>
       ) : (
@@ -271,33 +257,6 @@ export default function AdminServersPage() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
-
-                {/* Secret Key Display */}
-                <div className="mt-4 p-3 bg-black/30 rounded-xl border border-white/5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">🔐 Secret Key</span>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => toggleKeyVisibility(server.id)}
-                        className="text-zinc-500 hover:text-white transition-colors p-1"
-                      >
-                        {visibleKeys.has(server.id) ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                      </button>
-                      <button
-                        onClick={() => copyToClipboard(server.secretKey, server.id)}
-                        className="text-zinc-500 hover:text-white transition-colors p-1"
-                      >
-                        {copiedId === server.id ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-white font-mono text-sm mt-1 select-all">
-                    {visibleKeys.has(server.id) ? server.secretKey : "••••••••••••••••••••••••••••••••"}
-                  </p>
-                  <p className="text-amber-500/60 text-[9px] mt-1">
-                    Bu kalitni plugin config.yml dagi "api.secret-key" ga nusxalang
-                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -45,7 +45,6 @@ export async function getAllServersAction() {
         displayName: data.displayName || data.name || "",
         order: data.order || 0,
         isActive: data.isActive !== false,
-        secretKey: data.secretKey || "",
       }
     })
   } catch (error: any) {
@@ -61,14 +60,9 @@ export async function createServerAction(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim()
   const displayName = String(formData.get("displayName") ?? "").trim()
   const order = parseInt(formData.get("order") as string) || 0
-  const secretKey = String(formData.get("secretKey") ?? "").trim()
 
   if (!id || !name) {
     return { success: false, message: "ID va nomi to'ldirilishi shart!" }
-  }
-
-  if (!secretKey || secretKey.length < 16) {
-    return { success: false, message: "Secret key kamida 16 belgidan iborat bo'lishi kerak!" }
   }
 
   try {
@@ -83,7 +77,6 @@ export async function createServerAction(formData: FormData) {
       displayName,
       order,
       isActive: true,
-      secretKey,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     })
@@ -103,7 +96,6 @@ export async function updateServerAction(id: string, formData: FormData) {
   const displayName = String(formData.get("displayName") ?? "").trim()
   const order = parseInt(formData.get("order") as string) || 0
   const isActive = formData.get("isActive") === "true"
-  const secretKey = String(formData.get("secretKey") ?? "").trim()
 
   if (!name) {
     return { success: false, message: "Server nomi to'ldirilishi shart!" }
@@ -116,11 +108,6 @@ export async function updateServerAction(id: string, formData: FormData) {
       order,
       isActive,
       updatedAt: FieldValue.serverTimestamp(),
-    }
-
-    // Only update secret key if provided (non-empty)
-    if (secretKey && secretKey.length >= 16) {
-      updateData.secretKey = secretKey
     }
 
     await adminDb.collection("servers").doc(id).update(updateData)
