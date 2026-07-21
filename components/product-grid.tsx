@@ -14,6 +14,7 @@ import { ProductDialog } from "./product-dialog"
 import { createInpayPaymentAction } from "@/app/actions/inpay"
 import { getProductsAction } from "@/app/actions/products"
 import { getServersAction } from "@/app/actions/servers"
+import { useRouter } from "next/navigation"
 
 
 import { useTranslation } from "@/hooks/use-translation"
@@ -61,6 +62,7 @@ export function ProductGrid() {
   const [activeServer, setActiveServer] = useState<string>("")
   const { toast } = useToast()
   const { lang, t } = useTranslation()
+  const router = useRouter()
 
   useEffect(() => {
     async function loadServers() {
