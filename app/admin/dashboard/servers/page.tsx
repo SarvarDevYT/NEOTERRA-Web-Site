@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Trash2, Plus, Server, Copy, Check, Shield } from "lucide-react";
+import { Trash2, Plus, Server, Copy, Check, Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getAllServersAction, createServerAction, updateServerAction, deleteServerAction } from "@/app/actions/servers";
 
@@ -29,8 +29,6 @@ interface ServerItem {
 export default function AdminServersPage() {
   const [servers, setServers] = useState<ServerItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
 
   const GLOBAL_SECRET_KEY = "neoterra2026Nsarvar2010Sneoterrateamuz";
@@ -99,75 +97,18 @@ export default function AdminServersPage() {
           <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Serverlar Boshqaruvi
           </h1>
-          <p className="text-zinc-400">Minecraft serverlarni qo&apos;shing va boshqaring.</p>
+          <p className="text-zinc-400">Minecraft serverlarni monitoring qiling va boshqaring.</p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
-              <Plus className="h-4 w-4" /> Yangi Server
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-black text-white uppercase italic">
-                YANGI <span className="text-purple-500">SERVER</span>
-              </DialogTitle>
-              <DialogDescription className="text-zinc-400 font-medium">
-                Minecraft serveringizni saytga qo&apos;shing.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddServer} className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Server ID (lotin harflari, raqamlar)</Label>
-                <Input
-                  name="id"
-                  placeholder="Masalan: survival"
-                  required
-                  pattern="[a-z0-9_-]+"
-                  className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold font-mono"
-                />
-                <p className="text-[9px] text-zinc-600 ml-1">Plugin config.yml dagi server-id bilan bir xil bo&apos;lishi kerak!</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Server Nomi</Label>
-                  <Input
-                    name="name"
-                    placeholder="Survival Server"
-                    required
-                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Ko&apos;rsatiladigan Nomi</Label>
-                  <Input
-                    name="displayName"
-                    placeholder="🌍 Survival"
-                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Tartib (Order)</Label>
-                <Input
-                  name="order"
-                  type="number"
-                  defaultValue="0"
-                  className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold"
-                />
-              </div>
-
-              <DialogFooter className="pt-2">
-                <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-purple-600 hover:bg-purple-700 font-black tracking-widest italic rounded-2xl">
-                  {isSubmitting ? "QO'SHILMOQDA..." : "SERVERNI QO'SHISH"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={fetchServers}
+          disabled={isLoading}
+          variant="outline"
+          className="border-white/10 text-white hover:bg-white/5 font-bold gap-2 rounded-xl"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          Yangilash
+        </Button>
       </div>
 
       {/* Global Secret Key Card */}
@@ -202,12 +143,10 @@ export default function AdminServersPage() {
         <CardContent className="p-4 text-sm text-blue-300 space-y-2">
           <p className="font-bold text-blue-400">📋 Qanday ishlaydi:</p>
           <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-400">
-            <li>Shu yerda yangi server qo&apos;shing (faqat ID va nom kerak)</li>
-            <li>Plugin JAR faylni Minecraft server <code className="text-blue-400">plugins/</code> papkasiga joylashtiring</li>
-            <li>Plugin <code className="text-blue-400">config.yml</code> da <strong className="text-white">server-id</strong> ni shu sahifadagi ID bilan bir xil qiling</li>
+            <li>Minecraft serveringizdagi <code className="text-blue-400">NeoTerraCore/config.yml</code> faylida <strong className="text-white">server-id</strong> va <strong className="text-white">server-name</strong> o&apos;rnating</li>
             <li><code className="text-blue-400">config.yml</code> dagi <strong className="text-white">secret-key</strong> ga yuqoridagi global kalitni nusxalang</li>
-            <li>Serverni qayta ishga tushiring yoki <code className="text-blue-400">/neoterra reload</code> buyrug&apos;ini yozing</li>
-            <li>Admin → Do&apos;kon sahifasida server tanlab donatlarni qo&apos;shing</li>
+            <li>Serverni yoqing yoki <code className="text-blue-400">/neoterra reload</code> qiling — server avtomatik ravshda shu yerda va sayt do&apos;konida paydo bo&apos;ladi!</li>
+            <li>Status va o&apos;yinchilar soni har 30 soniyada avtomatik yangilanib turadi</li>
           </ol>
         </CardContent>
       </Card>
@@ -219,8 +158,8 @@ export default function AdminServersPage() {
         <Card className="border-white/5 bg-zinc-900/50 rounded-2xl">
           <CardContent className="text-center py-16">
             <Server className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-500 font-bold">Hali hech qanday server qo&apos;shilmagan</p>
-            <p className="text-zinc-600 text-sm mt-1">Yuqoridagi &quot;Yangi Server&quot; tugmasini bosing</p>
+            <p className="text-zinc-500 font-bold">Hali hech qanday server ulanmagan</p>
+            <p className="text-zinc-600 text-sm mt-1">Minecraft serveringizda NeoTerraCore plaginini yoqing, server avtomatik ro&apos;yxatdan o&apos;tadi.</p>
           </CardContent>
         </Card>
       ) : (

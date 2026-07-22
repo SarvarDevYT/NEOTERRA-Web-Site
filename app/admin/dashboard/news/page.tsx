@@ -25,7 +25,7 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
-import { Newspaper, Plus, Trash2, Calendar, UserIcon, Edit2 } from "lucide-react";
+import { Newspaper, Plus, Trash2, Calendar, UserIcon, Edit2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 
@@ -44,6 +44,7 @@ interface NewsItem {
 
 export default function NewsManagerPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [imageValue, setImageValue] = useState<string | null>(null);
   const [editImageValue, setEditImageValue] = useState<string | null>(null);
   const [state, formAction] = useActionState(createNewsAction, { error: "" });
@@ -58,9 +59,17 @@ export default function NewsManagerPage() {
   }, []);
 
   async function fetchNews() {
-    const res = await fetch("/api/admin/news");
-    const data = await res.json();
-    setNews(data);
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/news");
+      if (res.ok) {
+        const data = await res.json();
+        setNews(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setIsLoading(false);
   }
 
   const openEditDialog = (item: NewsItem) => {
@@ -98,6 +107,16 @@ export default function NewsManagerPage() {
             Saytdagi barcha yangiliklarni boshqaring.
           </p>
         </div>
+
+        <Button
+          onClick={fetchNews}
+          disabled={isLoading}
+          variant="outline"
+          className="border-white/10 text-white hover:bg-white/5 font-bold gap-2 rounded-xl"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          Yangilash
+        </Button>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-12">

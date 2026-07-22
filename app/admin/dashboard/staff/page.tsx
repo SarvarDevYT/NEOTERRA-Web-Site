@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Shield, Trash2, Plus, User, Send, MessageSquare, Edit2 } from "lucide-react";
+import { Shield, Trash2, Plus, User, Send, MessageSquare, Edit2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getStaffAction, createStaffAction, deleteStaffAction, updateStaffAction } from "@/app/actions/staff";
 import { ImageUploader } from "@/components/admin/ImageUploader";
@@ -122,12 +122,23 @@ export default function AdminStaffPage() {
           <p className="text-zinc-400">Owner, Admin va Moderatorlarni boshqaring.</p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
-              <Plus className="h-4 w-4" /> Yangi Xodim
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={fetchStaff}
+            disabled={isLoading}
+            variant="outline"
+            className="border-white/10 text-white hover:bg-white/5 font-bold gap-2 rounded-xl"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            Yangilash
+          </Button>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
+                <Plus className="h-4 w-4" /> Yangi Xodim
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[450px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(168,85,247,0.3)] text-white">
             <DialogHeader className="relative">
               <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />

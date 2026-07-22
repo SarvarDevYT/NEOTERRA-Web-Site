@@ -162,6 +162,16 @@ export default function AdminShopPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button
+            onClick={() => { fetchProducts(); fetchServers(); }}
+            disabled={isLoading}
+            variant="outline"
+            className="border-white/10 text-white hover:bg-white/5 font-bold gap-2 rounded-xl"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            Yangilash
+          </Button>
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">

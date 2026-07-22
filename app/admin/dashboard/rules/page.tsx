@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { getRulesAction, createRuleAction, updateRuleAction, deleteRuleAction } from "@/app/actions/rules";
-import { Gavel, Plus, Trash2, Edit2, ArrowUpDown } from "lucide-react";
+import { Gavel, Plus, Trash2, Edit2, ArrowUpDown, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface Rule {
@@ -113,12 +113,23 @@ export default function RulesManagerPage() {
           <p className="text-zinc-400">Server qoidalarini qo'shing, tahrirlang yoki o'chiring.</p>
         </div>
 
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
-              <Plus className="h-4 w-4" /> Yangi Qoida
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={fetchRules}
+            disabled={isLoading}
+            variant="outline"
+            className="border-white/10 text-white hover:bg-white/5 font-bold gap-2 rounded-xl"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            Yangilash
+          </Button>
+
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-purple-600 hover:bg-purple-700 font-bold gap-2">
+                <Plus className="h-4 w-4" /> Yangi Qoida
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[450px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
             <DialogHeader>
               <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter">
