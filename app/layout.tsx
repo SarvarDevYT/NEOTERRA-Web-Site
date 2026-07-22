@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "uz_UZ",
     url: "https://site.neoterra.uz",
-    title: "SITE.NEOTERRA.UZ - NeoTerra Minecraft Server in Uzbekistan",
+    title: "NeoTerra Minecraft Server in Uzbekistan",
     description: "NeoTerra Minecraft Server - O'zbekistondagi eng zamonaviy va innovatsion Minecraft serveri! play.neoterra.uz yoki mc.neoterra.uz manzili orqali o'yinga qo'shiling.",
     siteName: "NeoTerra",
     images: [
