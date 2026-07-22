@@ -139,77 +139,84 @@ export default function AdminStaffPage() {
                 <Plus className="h-4 w-4" /> Yangi Xodim
               </Button>
             </DialogTrigger>
-          <DialogContent className="sm:max-w-[450px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(168,85,247,0.3)] text-white">
-            <DialogHeader className="relative">
-              <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />
-              <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter liquid-shadow relative z-10">
-                YANGI <span className="text-primary italic">XODIM</span>
-              </DialogTitle>
-              <DialogDescription className="text-zinc-400 font-medium">
-                Xodimning Minecraft niki va ijtimoiy tarmoqlarini kiriting.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddStaff} className="space-y-5 pt-4 relative z-10">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Minecraft Nik</label>
-                <Input
-                  id="nickname"
-                  name="nickname"
-                  placeholder="PlayerName"
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                  required
-                />
-              </div>
-
-              <TagRoleInput name="role" />
-
-              <div className="grid grid-cols-2 gap-4">
+            <DialogContent className="sm:max-w-[450px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(168,85,247,0.3)] text-white">
+              <DialogHeader className="relative">
+                <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />
+                <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter liquid-shadow relative z-10">
+                  YANGI <span className="text-primary italic">XODIM</span>
+                </DialogTitle>
+                <DialogDescription className="text-zinc-400 font-medium">
+                  Jamoaga yangi a&apos;zo qo&apos;shish uchun ma&apos;lumotlarni kiriting.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddStaff} className="space-y-4 pt-2 relative z-10">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Discord (URL)</label>
+                  <label htmlFor="nickname" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Minecraft Nickname</label>
                   <Input
-                    id="discord"
-                    name="discord"
-                    placeholder="https://..."
-                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    id="nickname"
+                    name="nickname"
+                    placeholder="Masalan: Notch"
+                    className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Telegram (URL)</label>
-                  <Input
-                    id="telegram"
-                    name="telegram"
-                    placeholder="https://..."
-                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Lavozim (Role)</label>
+                  <TagRoleInput
+                    name="role"
+                    placeholder="Masalan: OWNER, HELPER, MODERATOR"
                   />
                 </div>
-              </div>
 
-              <ImageUploader
-                name="imageUrl"
-                value={preview}
-                onChange={setPreview}
-                label="Maxsus Skin / Rasm (Ixtiyoriy)"
-              />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="telegram" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Telegram (Username)</label>
+                    <Input
+                      id="telegram"
+                      name="telegram"
+                      placeholder="@username"
+                      className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="discord" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Discord (Username)</label>
+                    <Input
+                      id="discord"
+                      name="discord"
+                      placeholder="username#0000"
+                      className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    />
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (0 - Ustunlik)</label>
-                <Input
-                  id="order"
-                  name="order"
-                  type="number"
-                  defaultValue="0"
-                  className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
+                <ImageUploader
+                  name="imageUrl"
+                  value={preview}
+                  onChange={setPreview}
+                  label="Maxsus Skin / Rasm (Ixtiyoriy)"
                 />
-              </div>
 
-              <DialogFooter className="pt-4">
-                <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95">
-                  {isSubmitLoading ? "QO'SHILMOQDA..." : "XODIMNI QO'SHISH"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (0 - Ustunlik)</label>
+                  <Input
+                    id="order"
+                    name="order"
+                    type="number"
+                    defaultValue="0"
+                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
+                  />
+                </div>
+
+                <DialogFooter className="pt-4">
+                  <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95">
+                    {isSubmitLoading ? "QO'SHILMOQDA..." : "XODIMNI QO'SHISH"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

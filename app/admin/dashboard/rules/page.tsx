@@ -130,83 +130,84 @@ export default function RulesManagerPage() {
                 <Plus className="h-4 w-4" /> Yangi Qoida
               </Button>
             </DialogTrigger>
-          <DialogContent className="sm:max-w-[450px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
-            <DialogHeader>
-              <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter">
-                YANGI <span className="text-purple-500">QOIDA</span>
-              </DialogTitle>
-              <DialogDescription className="text-zinc-400 font-medium">
-                Qoidani tartib raqami va tavsifi bilan kiriting.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateRule} className="space-y-5 pt-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida sarlavhasi (UZ)</label>
-                <Input
-                  name="title"
-                  placeholder="Masalan: 1.1, Reklama taqiqlanadi"
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida sarlavhasi (RU)</label>
-                <Input
-                  name="title_ru"
-                  placeholder="Masalan: 1.1, Реклама запрещена"
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida sarlavhasi (EN)</label>
-                <Input
-                  name="title_en"
-                  placeholder="Masalan: 1.1, Advertising is prohibited"
-                  className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (Order)</label>
-                <Input
-                  name="order"
-                  type="number"
-                  defaultValue={rules.length + 1}
-                  className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida tavsifi (UZ)</label>
-                <Textarea
-                  name="description"
-                  placeholder="Batafsil ma'lumot (UZ)..."
-                  className="h-24 border-white/10 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida tavsifi (RU)</label>
-                <Textarea
-                  name="description_ru"
-                  placeholder="Batafsil ma'lumot (RU)..."
-                  className="h-24 border-white/10 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida tavsifi (EN)</label>
-                <Textarea
-                  name="description_en"
-                  placeholder="Batafsil ma'lumot (EN)..."
-                  className="h-24 border-white/10 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
-                />
-              </div>
-              <DialogFooter className="pt-4">
-                <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20">
-                  {isSubmitLoading ? "SAQLANMOQDA..." : "QOIDANI SAQLASH"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+            <DialogContent className="sm:max-w-[450px] border-white/10 bg-zinc-950/80 backdrop-blur-2xl rounded-[2.5rem] text-white">
+              <DialogHeader>
+                <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter">
+                  YANGI <span className="text-purple-500">QOIDA</span>
+                </DialogTitle>
+                <DialogDescription className="text-zinc-400 font-medium">
+                  Qoidani tartib raqami va tavsifi bilan kiriting.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateRule} className="space-y-5 pt-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida sarlavhasi (UZ)</label>
+                  <Input
+                    name="title"
+                    placeholder="Masalan: 1.1 Cheating taqiqlangan"
+                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida sarlavhasi (RU)</label>
+                  <Input
+                    name="title_ru"
+                    placeholder="Sarlavha (RU)..."
+                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida sarlavhasi (EN)</label>
+                  <Input
+                    name="title_en"
+                    placeholder="Sarlavha (EN)..."
+                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Tartib (Order)</label>
+                  <Input
+                    name="order"
+                    type="number"
+                    defaultValue={rules.length + 1}
+                    className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold transition-all focus:bg-white/10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida tavsifi (UZ)</label>
+                  <Textarea
+                    name="description"
+                    placeholder="Batafsil ma'lumot (UZ)..."
+                    className="h-24 border-white/10 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida tavsifi (RU)</label>
+                  <Textarea
+                    name="description_ru"
+                    placeholder="Batafsil ma'lumot (RU)..."
+                    className="h-24 border-white/10 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Qoida tavsifi (EN)</label>
+                  <Textarea
+                    name="description_en"
+                    placeholder="Batafsil ma'lumot (EN)..."
+                    className="h-24 border-white/10 bg-white/5 rounded-2xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                  />
+                </div>
+                <DialogFooter className="pt-4">
+                  <Button type="submit" disabled={isSubmitLoading} className="w-full h-14 bg-primary hover:bg-primary/90 font-black tracking-widest italic rounded-2xl shadow-lg shadow-primary/20">
+                    {isSubmitLoading ? "SAQLANMOQDA..." : "QOIDANI SAQLASH"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Rules list & edit dialog */}
