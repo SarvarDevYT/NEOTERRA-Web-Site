@@ -236,7 +236,7 @@ export default function SettingsPage() {
           </p>
         </header>
 
-        <div className="grid gap-8 md:grid-cols-12">
+        <div className="grid gap-8 md:grid-cols-12 items-start">
           <div className="md:col-span-7 space-y-6">
             <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
