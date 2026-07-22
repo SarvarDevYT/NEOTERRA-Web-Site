@@ -40,11 +40,14 @@ export async function POST(request: Request) {
 
     // 2. Update payment status if it is pending
     if (paymentData.status === "pending") {
-      const isSuccessStatus = ["success", "paid", "completed", "1", "true", "ok"].includes(rawStatus) || !rawStatus
+      const isSuccessStatus = ["success", "paid", "completed", "1", "true", "ok"].includes(rawStatus)
+      const isCancelledStatus = ["cancelled", "failed", "rejected", "expired", "-1", "0", "canceled"].includes(rawStatus)
+      const receiptUrl = paymentData.receiptUrl || (orderId ? `https://inpay.uz/r/${orderId}` : null)
 
       if (isSuccessStatus) {
         await paymentDoc.ref.update({
           status: "success",
+          receiptUrl: receiptUrl,
           updatedAt: new Date(),
         })
 
@@ -120,6 +123,13 @@ export async function POST(request: Request) {
             console.error("🔴 Telegram admin notification failed:", tgError)
           }
         }
+      } else if (isCancelledStatus) {
+        await paymentDoc.ref.update({
+          status: "cancelled",
+          receiptUrl: receiptUrl,
+          updatedAt: new Date(),
+        })
+        console.log(`❌ Order ${orderId} marked as cancelled`)
       }
     }
 
