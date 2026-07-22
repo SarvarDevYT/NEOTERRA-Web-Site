@@ -11,7 +11,7 @@ import { OfflineDetector } from "@/components/offline-detector"
 export const metadata: Metadata = {
   metadataBase: new URL("https://site.neoterra.uz"),
   title: {
-    default: "SITE.NEOTERRA.UZ - NeoTerra Minecraft Server in Uzbekistan",
+    default: "NeoTerra Minecraft Server in Uzbekistan",
     template: "%s | SITE.NEOTERRA.UZ"
   },
   description: "NeoTerra Minecraft Server - O'zbekistondagi eng zamonaviy va innovatsion Minecraft serveri! Ranks, crates, keys, tokenlar, qiziqarli o'yinlar. play.neoterra.uz yoki mc.neoterra.uz IP manzili orqali ulaning.",
