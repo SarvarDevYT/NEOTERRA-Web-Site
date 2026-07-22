@@ -200,8 +200,8 @@ export default function SettingsPage() {
 
   if (!uid) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">
-        <p className="text-zinc-500 font-bold uppercase tracking-widest animate-pulse">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white p-4">
+        <p className="text-zinc-500 font-bold uppercase tracking-widest animate-pulse text-sm">
           {lang === "uz" ? "Sozlamalar yuklanmoqda..." : lang === "ru" ? "Загрузка настроек..." : "Loading settings..."}
         </p>
       </div>
@@ -210,15 +210,17 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white relative overflow-hidden flex flex-col justify-between">
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+      {/* Dynamic Background Glows */}
+      <div className="absolute top-0 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="container mx-auto max-w-4xl py-20 md:py-32 px-4 relative z-10 flex-grow">
-        <header className="text-center mb-10 md:mb-16">
-          <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-purple-400 mb-6 md:mb-8 border border-white/10 backdrop-blur-xl shadow-2xl">
-            <Key className="h-8 w-8 md:h-10 md:w-10 animate-pulse" />
+      <div className="container mx-auto max-w-6xl py-12 sm:py-20 md:py-28 px-4 sm:px-6 relative z-10 flex-grow">
+        {/* Header */}
+        <header className="text-center mb-8 sm:mb-12 md:mb-16">
+          <div className="inline-flex h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-purple-400 mb-4 sm:mb-6 border border-white/10 backdrop-blur-xl shadow-2xl">
+            <Key className="h-7 w-7 sm:h-9 sm:w-9 md:h-10 md:w-10 animate-pulse" />
           </div>
-          <h1 className="text-3xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-4 liquid-shadow">
+          <h1 className="text-2xl sm:text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-3 sm:mb-4 liquid-shadow">
             {lang === "uz" ? (
               <>PROFIL <span className="text-purple-500">SOZLAMALARI</span></>
             ) : lang === "ru" ? (
@@ -227,7 +229,7 @@ export default function SettingsPage() {
               <>PROFILE <span className="text-purple-500">SETTINGS</span></>
             )}
           </h1>
-          <p className="text-zinc-400 max-w-xl mx-auto font-medium">
+          <p className="text-xs sm:text-sm md:text-base text-zinc-400 max-w-xl mx-auto font-medium px-2">
             {lang === "uz"
               ? "Akkaunt sozlamalarini boshqarish, ijtimoiy tarmoqlarni ulash va Minecraft nikingizni tahrirlash."
               : lang === "ru"
@@ -236,16 +238,21 @@ export default function SettingsPage() {
           </p>
         </header>
 
-        <div className="grid gap-8 lg:grid-cols-12 items-start">
+        {/* Responsive Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+          
+          {/* CHAP USTUN (LEFT COLUMN - 7 cols) */}
           <div className="lg:col-span-7 space-y-6">
-            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
+            
+            {/* 1. IJTIMOIY TARMOQLARNI ULASH */}
+            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-7 shadow-xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-              <CardHeader className="p-0 mb-6">
-                <CardTitle className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-blue-500" />
+              <CardHeader className="p-0 mb-5">
+                <CardTitle className="text-lg sm:text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-blue-500 shrink-0" />
                   {lang === "uz" ? "Ijtimoiy Tarmoqlarni Ulash" : lang === "ru" ? "Привязка социальных сетей" : "Link Social Accounts"}
                 </CardTitle>
-                <CardDescription className="text-zinc-400 font-medium">
+                <CardDescription className="text-xs sm:text-sm text-zinc-400 font-medium mt-1">
                   {lang === "uz"
                     ? "Kirishni osonlashtirish uchun Google profilingizni bog'lang."
                     : lang === "ru"
@@ -253,22 +260,24 @@ export default function SettingsPage() {
                     : "Link your Google profile to make login easier."}
                 </CardDescription>
               </CardHeader>
+              
               <div className="space-y-4">
+                {/* Google Login Status */}
                 {isGoogleLinked ? (
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-xs sm:text-sm gap-2">
                     <span className="flex items-center gap-2">
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4 shrink-0" />
                       {lang === "uz" ? "Google ulandi" : lang === "ru" ? "Google привязан" : "Google linked"}
                     </span>
-                    <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{email}</span>
+                    <span className="text-[11px] sm:text-xs text-zinc-500 uppercase tracking-wider font-medium truncate max-w-[200px] sm:max-w-none">{email}</span>
                   </div>
                 ) : (
                   <Button
                     onClick={handleLinkGoogle}
-                    className="w-full font-bold h-12 bg-white text-black hover:bg-white/90 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                    className="w-full font-bold h-11 sm:h-12 bg-white text-black hover:bg-white/90 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-xs sm:text-sm"
                     disabled={isLinkingGoogle}
                   >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                       <path fill="#EA4335" d="M12 5.04c1.7 0 3.2.6 4.4 1.8l3.3-3.3C17.7 1.6 15 1 12 1 7.3 1 3.4 3.7 1.6 7.7l3.9 3c.9-2.7 3.4-4.7 6.5-4.7z"/>
                       <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
                       <path fill="#FBBC05" d="M5.5 14.7c-.2-.6-.3-1.3-.3-2.7s.1-2.1.3-2.7L1.6 6.3C.6 8.3 0 10.6 0 13s.6 4.7 1.6 6.7l3.9-3z"/>
@@ -277,73 +286,74 @@ export default function SettingsPage() {
                     {lang === "uz" ? "Google akkauntini bog'lash" : lang === "ru" ? "Привязать аккаунт Google" : "Link Google Account"}
                   </Button>
                 )}
-              </div>
 
-              {/* Telegram Linking */}
-              <div className="space-y-4 mt-4 pt-4 border-t border-white/5">
-                {profile?.telegramUsername ? (
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm">
-                    <span className="flex items-center gap-2">
-                      <Check className="h-4 w-4" />
-                      {lang === "uz" ? "Telegram ulandi" : lang === "ru" ? "Telegram привязан" : "Telegram linked"}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">{profile.telegramUsername}</span>
-                      <button
-                        onClick={async () => {
-                          if (!uid) return;
-                          if (!confirm(lang === "uz" ? "Telegram akkauntni uzmoqchimisiz?" : "Unlink Telegram?")) return;
-                          setIsUnlinkingTg(true);
-                          const res = await unlinkTelegramAction(uid);
-                          toast({ title: res.success ? "✅" : "❌", description: res.message });
-                          if (res.success) {
-                            const data = await getUserProfile(uid, email);
-                            if (data) setProfile(data);
-                          }
-                          setIsUnlinkingTg(false);
-                        }}
-                        disabled={isUnlinkingTg}
-                        className="text-xs text-red-400 hover:text-red-300 underline font-bold"
-                      >
-                        {isUnlinkingTg ? "..." : (lang === "uz" ? "Uzish" : "Unlink")}
-                      </button>
+                {/* Telegram Linking */}
+                <div className="pt-3 border-t border-white/5">
+                  {profile?.telegramUsername ? (
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-xs sm:text-sm gap-2">
+                      <span className="flex items-center gap-2">
+                        <Check className="h-4 w-4 shrink-0" />
+                        {lang === "uz" ? "Telegram ulandi" : lang === "ru" ? "Telegram привязан" : "Telegram linked"}
+                      </span>
+                      <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                        <span className="text-[11px] sm:text-xs text-zinc-500 uppercase tracking-wider font-medium truncate">{profile.telegramUsername}</span>
+                        <button
+                          onClick={async () => {
+                            if (!uid) return;
+                            if (!confirm(lang === "uz" ? "Telegram akkauntni uzmoqchimisiz?" : "Unlink Telegram?")) return;
+                            setIsUnlinkingTg(true);
+                            const res = await unlinkTelegramAction(uid);
+                            toast({ title: res.success ? "✅" : "❌", description: res.message });
+                            if (res.success) {
+                              const data = await getUserProfile(uid, email);
+                              if (data) setProfile(data);
+                            }
+                            setIsUnlinkingTg(false);
+                          }}
+                          disabled={isUnlinkingTg}
+                          className="text-xs text-red-400 hover:text-red-300 underline font-bold shrink-0"
+                        >
+                          {isUnlinkingTg ? "..." : (lang === "uz" ? "Uzish" : "Unlink")}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <a
-                    href={`https://t.me/neoterrauz_bot?start=link_${uid}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button
-                      className="w-full font-bold h-12 bg-[#229ED9] text-white hover:bg-[#1a8abf] rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                  ) : (
+                    <a
+                      href={`https://t.me/neoterrauz_bot?start=link_${uid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full"
                     >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.492-1.302.48-.428-.012-1.252-.242-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                      </svg>
-                      {lang === "uz" ? "Telegram akkauntini bog'lash" : lang === "ru" ? "Привязать аккаунт Telegram" : "Link Telegram Account"}
-                    </Button>
-                  </a>
-                )}
+                      <Button
+                        className="w-full font-bold h-11 sm:h-12 bg-[#229ED9] text-white hover:bg-[#1a8abf] rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-xs sm:text-sm"
+                      >
+                        <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.492-1.302.48-.428-.012-1.252-.242-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                        </svg>
+                        {lang === "uz" ? "Telegram akkauntini bog'lash" : lang === "ru" ? "Привязать аккаунт Telegram" : "Link Telegram Account"}
+                      </Button>
+                    </a>
+                  )}
+                </div>
               </div>
             </Card>
 
-            {/* Payment History Card (To'lovlar Tarixi - Chap tomondagi 1-ustunda) */}
-            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
+            {/* 2. TO'LOVLAR TARIXI (PAYMENT HISTORY CARD) */}
+            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-7 shadow-xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
               
-              <div className="flex items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
                 <div>
-                  <h3 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
-                    <History className="size-5 text-amber-400" />
+                  <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+                    <History className="size-5 text-amber-400 shrink-0" />
                     {lang === "uz" ? "To'lovlar Tarixi" : lang === "ru" ? "История платежей" : "Payment History"}
                   </h3>
                   <p className="text-xs text-zinc-400 font-medium mt-1">
                     {lang === "uz" 
-                      ? "InPay va Admin orqali amalga oshirilgan to'lovlar, bekor qilingan tranzaksiyalar va rasmiy cheklar." 
+                      ? "InPay va Admin orqali amalga oshirilgan to'lovlar va rasmiy cheklar." 
                       : lang === "ru" 
-                      ? "Платежи через InPay и Admin, отмененные транзакции и официальные чеки." 
-                      : "Payments made via InPay & Admin, cancelled transactions and official receipts."}
+                      ? "Платежи через InPay и Admin, официальные чеки." 
+                      : "Payments made via InPay & Admin, official receipts."}
                   </p>
                 </div>
 
@@ -360,7 +370,7 @@ export default function SettingsPage() {
                   }}
                   variant="outline"
                   size="sm"
-                  className="bg-white/5 border-white/10 hover:bg-white/10 text-white/80 rounded-xl text-xs flex items-center gap-1.5 shrink-0"
+                  className="bg-white/5 border-white/10 hover:bg-white/10 text-white/80 rounded-xl text-xs flex items-center gap-1.5 shrink-0 self-end sm:self-auto"
                 >
                   <RefreshCw className={`size-3.5 ${isPaymentsLoading ? "animate-spin" : ""}`} />
                   {lang === "uz" ? "Yangilash" : lang === "ru" ? "Обновить" : "Refresh"}
@@ -376,7 +386,7 @@ export default function SettingsPage() {
                   {lang === "uz" ? "Sizda hali to'lovlar mavjud emas" : lang === "ru" ? "У вас пока нет платежей" : "No payment history found"}
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
                   {payments.map((p) => {
                     const isSuccess = p.status === "success" || p.status === "completed" || p.status === "paid";
                     const isCancelled = p.status === "cancelled" || p.status === "failed" || p.status === "rejected";
@@ -396,9 +406,9 @@ export default function SettingsPage() {
                     return (
                       <div
                         key={p.id}
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-white/10 transition-all gap-4"
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-black/40 border border-white/5 hover:border-white/10 transition-all gap-3"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
                           <div
                             className={`p-2.5 rounded-xl border shrink-0 ${
                               isSuccess
@@ -408,38 +418,38 @@ export default function SettingsPage() {
                                 : "bg-amber-500/10 border-amber-500/20 text-amber-400"
                             }`}
                           >
-                            <CreditCard className="size-5" />
+                            <CreditCard className="size-4 sm:size-5" />
                           </div>
 
-                          <div className="space-y-1">
-                            <div className="text-sm font-bold text-white flex flex-wrap items-center gap-2">
-                              {/* Payment Method Badge (INPAY vs ADMIN) */}
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <div className="text-xs sm:text-sm font-bold text-white flex flex-wrap items-center gap-2">
+                              {/* Payment Method Badge */}
                               {method === "INPAY" ? (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-black tracking-wider uppercase shadow-sm">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-black tracking-wider uppercase">
                                   ⚡ INPAY
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-400 text-[10px] font-black tracking-wider uppercase shadow-sm">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-400 text-[10px] font-black tracking-wider uppercase">
                                   🛡️ ADMIN
                                 </span>
                               )}
 
-                              <span className="truncate max-w-[180px]">{p.description || "To'lov"}</span>
-                              <span className="text-amber-400 text-xs font-mono font-bold">
+                              <span className="truncate max-w-[140px] sm:max-w-[200px]">{p.description || "To'lov"}</span>
+                              <span className="text-amber-400 text-xs font-mono font-bold ml-auto sm:ml-0">
                                 {p.amount.toLocaleString()} UZS
                               </span>
                             </div>
 
-                            <div className="text-[11px] text-zinc-500 font-mono">
+                            <div className="text-[10px] sm:text-[11px] text-zinc-500 font-mono truncate">
                               {dateStr} {p.inpayOrderId ? `· Order: #${p.inpayOrderId}` : ""}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end shrink-0">
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-white/5">
                           {/* Status Badge */}
                           <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                               isSuccess
                                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                                 : isCancelled
@@ -452,17 +462,17 @@ export default function SettingsPage() {
                             {isPending && (lang === "uz" ? "Kutilmoqda" : lang === "ru" ? "Ожидание" : "Pending")}
                           </span>
 
-                          {/* InPay Receipt Button (ONLY FOR INPAY PAYMENTS) */}
+                          {/* InPay Receipt Button */}
                           {method === "INPAY" && receiptUrl && (
                             <a
                               href={receiptUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 text-xs font-bold transition-all shadow-md"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 text-[11px] font-bold transition-all"
                             >
-                              <FileText className="size-3.5" />
-                              <span>{lang === "uz" ? "Chekni ko'rish" : lang === "ru" ? "Чек" : "Receipt"}</span>
-                              <ExternalLink className="size-3 text-amber-400/60" />
+                              <FileText className="size-3" />
+                              <span>{lang === "uz" ? "Chek" : "Receipt"}</span>
+                              <ExternalLink className="size-2.5 text-amber-400/60" />
                             </a>
                           )}
                         </div>
@@ -472,25 +482,28 @@ export default function SettingsPage() {
                 </div>
               )}
             </Card>
-          </div>
+
           </div>
 
+          {/* O'NG USTUN (RIGHT COLUMN - 5 cols) */}
           <div className="lg:col-span-5 space-y-6">
-            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden flex flex-col">
+            
+            {/* 1. SIZNING BALANSINGIZ VA TO'LOV FORMASI */}
+            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-7 shadow-xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
               
-              <div className="text-center py-6 bg-zinc-950/40 rounded-2xl mb-6 border border-white/5 relative overflow-hidden">
+              <div className="text-center py-5 sm:py-6 bg-zinc-950/50 rounded-xl sm:rounded-2xl mb-5 border border-white/5 relative overflow-hidden">
                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">
                   {lang === "uz" ? "Sizning Balansingiz" : lang === "ru" ? "Ваш Баланс" : "Your Balance"}
                 </div>
-                <div className="text-3xl font-black text-white italic tracking-tight">
-                  {profile ? Number(profile.balance || 0).toLocaleString() : "0"} <span className="text-primary text-lg">UZS</span>
+                <div className="text-2xl sm:text-3xl font-black text-white italic tracking-tight">
+                  {profile ? Number(profile.balance || 0).toLocaleString() : "0"} <span className="text-primary text-base sm:text-lg">UZS</span>
                 </div>
               </div>
 
               {/* Top Up Form */}
-              <form onSubmit={handleTopup} className="space-y-4 mb-6 pb-6 border-b border-white/5">
-                <div className="space-y-2">
+              <form onSubmit={handleTopup} className="space-y-3.5 mb-5 pb-5 border-b border-white/5">
+                <div className="space-y-1.5">
                   <label htmlFor="topup" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
                     {lang === "uz" ? "Summani kiriting (UZS)" : lang === "ru" ? "Введите сумму (UZS)" : "Enter amount (UZS)"}
                   </label>
@@ -500,20 +513,20 @@ export default function SettingsPage() {
                     placeholder="Masalan: 10000"
                     value={topupAmount}
                     onChange={(e) => setTopupAmount(e.target.value)}
-                    className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold placeholder:text-zinc-700 transition-all focus:bg-white/10"
+                    className="border-white/10 focus-visible:ring-primary h-11 sm:h-12 bg-white/5 rounded-xl text-white font-bold placeholder:text-zinc-700 text-xs sm:text-sm"
                     required
                     disabled={isTopupLoading}
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-black tracking-widest h-12 text-sm bg-primary hover:bg-primary/90 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full font-black tracking-wider h-11 sm:h-12 text-xs sm:text-sm bg-primary hover:bg-primary/90 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
                   disabled={isTopupLoading}
                 >
                   <CreditCard className="size-4" />
                   {isTopupLoading 
-                    ? (lang === "uz" ? "TO'LDIRILMOQDA..." : lang === "ru" ? "ПОПОЛНЕНИЕ..." : "DEPOSITING...")
-                    : (lang === "uz" ? "AVTO TO'LOV (INPAY)" : lang === "ru" ? "АВТО ОПЛАТА (INPAY)" : "AUTO PAY (INPAY)")}
+                    ? (lang === "uz" ? "TO'LDIRILMOQDA..." : "DEPOSITING...")
+                    : (lang === "uz" ? "AVTO TO'LOV (INPAY)" : "AUTO PAY (INPAY)")}
                 </Button>
                 <Button
                   type="button"
@@ -523,179 +536,142 @@ export default function SettingsPage() {
                     const msg = `Salom Admin, mening Donat ID: ${uid}, Email: ${email}. Saytdagi balansimni ${Number(amt).toLocaleString()} UZS ga to'ldirmoqchiman.`;
                     window.open(`https://t.me/neoterrauz_bot?text=${encodeURIComponent(msg)}`, "_blank");
                   }}
-                  className="w-full font-bold h-12 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl flex items-center justify-center gap-2 border border-white/5"
+                  className="w-full font-bold h-11 sm:h-12 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl flex items-center justify-center gap-2 border border-white/5"
                 >
                   <Send className="size-4 text-purple-400" />
                   {lang === "uz" ? "ADMIN ORQALI TO'LDIRISH (TELEGRAM)" : "TOP UP VIA ADMIN (TELEGRAM)"}
                 </Button>
               </form>
               
-              <div className="w-full text-left space-y-2 mb-6">
+              {/* User Info Details */}
+              <div className="w-full text-left space-y-2">
                 <div className="flex justify-between items-center text-xs border-b border-white/5 pb-2">
-                  <span className="text-zinc-500 uppercase tracking-wider font-bold">ID (Donat ID)</span>
-                  <span className="text-white font-mono select-all bg-black/40 px-2 py-0.5 rounded border border-white/5 truncate max-w-[150px]">{uid}</span>
+                  <span className="text-zinc-500 uppercase tracking-wider font-bold text-[10px] sm:text-xs">ID (Donat ID)</span>
+                  <span className="text-white font-mono select-all bg-black/40 px-2 py-0.5 rounded border border-white/5 truncate max-w-[130px] sm:max-w-[160px] text-[11px] sm:text-xs">{uid}</span>
                 </div>
-                <div className="flex justify-between text-xs border-b border-white/5 pb-2">
-                  <span className="text-zinc-500 uppercase tracking-wider font-bold">Email</span>
-                  <span className="text-white font-medium truncate max-w-[150px]">{email}</span>
+                <div className="flex justify-between items-center text-xs border-b border-white/5 pb-2">
+                  <span className="text-zinc-500 uppercase tracking-wider font-bold text-[10px] sm:text-xs">Email</span>
+                  <span className="text-white font-medium truncate max-w-[150px] sm:max-w-[180px] text-[11px] sm:text-xs">{email}</span>
                 </div>
-                <div className="flex justify-between text-xs border-b border-white/5 pb-2">
-                  <span className="text-zinc-500 uppercase tracking-wider font-bold">
-                    {lang === "uz" ? "Roli" : lang === "ru" ? "Роль" : "Role"}
-                  </span>
-                  <span className="text-primary font-black uppercase">
-                    {isAdmin 
-                      ? "Admin" 
-                      : lang === "uz" 
-                      ? "Foydalanuvchi" 
-                      : lang === "ru" 
-                      ? "Пользователь" 
-                      : "User"}
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-zinc-500 uppercase tracking-wider font-bold text-[10px] sm:text-xs">{lang === "uz" ? "Roli" : "Role"}</span>
+                  <span className="text-purple-400 font-bold uppercase tracking-wider text-[11px] sm:text-xs">
+                    {profile?.role || (isAdmin ? "Admin" : "Foydalanuvchi")}
                   </span>
                 </div>
-              </div>
-
-              <div className="w-full space-y-3">
-                {/* Minecraft Account Linking Section */}
-                <div className="w-full p-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 space-y-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Gamepad2 className="size-4 text-purple-400" />
-                    <span className="text-xs font-black uppercase tracking-wider text-purple-400">
-                      {lang === "uz" ? "Minecraft Akkaunt" : lang === "ru" ? "Minecraft Аккаунт" : "Minecraft Account"}
-                    </span>
-                  </div>
-
-                  {profile?.minecraftUsername ? (
-                    <>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-zinc-500">Minecraft Nik</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-green-400 font-bold">{profile.minecraftUsername}</span>
-                          <button
-                            onClick={async () => {
-                              if (!uid) return;
-                              if (!confirm(lang === "uz" ? "Minecraft akkauntni uzmoqchimisiz?" : "Unlink Minecraft?")) return;
-                              setIsUnlinkingMc(true);
-                              const res = await unlinkMinecraftAction(uid);
-                              toast({ title: res.success ? "✅" : "❌", description: res.message });
-                              if (res.success) {
-                                const data = await getUserProfile(uid, email);
-                                if (data) setProfile(data);
-                              }
-                              setIsUnlinkingMc(false);
-                            }}
-                            disabled={isUnlinkingMc}
-                            className="text-[10px] text-red-400 hover:text-red-300 underline font-bold"
-                          >
-                            {isUnlinkingMc ? "..." : (lang === "uz" ? "Uzish" : "Unlink")}
-                          </button>
-                        </div>
-                      </div>
-                      {profile?.minecraftUuid && (
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-zinc-500">UUID</span>
-                          <span className="text-zinc-300 font-mono text-[10px] select-all">{profile.minecraftUuid}</span>
-                        </div>
-                      )}
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          onClick={async () => {
-                            if (!uid) return;
-                            setIsKicking(true);
-                            const res = await kickPlayer(uid);
-                            toast({ title: res.success ? "✅" : "❌", description: res.message });
-                            setIsKicking(false);
-                          }}
-                          disabled={isKicking}
-                          className="flex-1 bg-yellow-600/20 border border-yellow-500/30 hover:bg-yellow-600 text-yellow-400 hover:text-white text-xs font-bold h-10 rounded-xl transition-all"
-                        >
-                          <DoorOpen className="size-3 mr-1" />
-                          {isKicking ? "..." : (lang === "uz" ? "Serverdan Chiqish" : lang === "ru" ? "Выйти с сервера" : "Leave Server")}
-                        </Button>
-                        <Button
-                          onClick={async () => {
-                            if (!uid) return;
-                            if (!confirm(lang === "uz" ? "Haqiqatan ham o'zingizga 30 daqiqalik ban bermoqchimisiz?" : "Are you sure you want to ban yourself for 30 minutes?")) return;
-                            setIsBanning(true);
-                            const res = await tempBanPlayer(uid);
-                            toast({ title: res.success ? "✅" : "❌", description: res.message });
-                            setIsBanning(false);
-                          }}
-                          disabled={isBanning}
-                          className="flex-1 bg-red-600/20 border border-red-500/30 hover:bg-red-600 text-red-400 hover:text-white text-xs font-bold h-10 rounded-xl transition-all"
-                        >
-                          <Ban className="size-3 mr-1" />
-                          {isBanning ? "..." : (lang === "uz" ? "30 min Ban" : "30 min Ban")}
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-zinc-500 text-[11px]">
-                        {lang === "uz"
-                          ? "Serverda /link buyrug'ini yozing va olingan 6 raqamli kodni kiriting."
-                          : lang === "ru"
-                          ? "Введите /link на сервере и введите полученный 6-значный код."
-                          : "Type /link on the server and enter the 6-digit code."}
-                      </p>
-                      <form
-                        onSubmit={async (e) => {
-                          e.preventDefault();
-                          if (!uid || !linkCode.trim()) return;
-                          setIsVerifying(true);
-                          const res = await verifyLinkCode(uid, linkCode.trim());
-                          toast({
-                            title: res.success ? "✅" : "❌",
-                            description: res.message,
-                            variant: res.success ? "default" : "destructive",
-                          });
-                          if (res.success) {
-                            setLinkCode("");
-                            const data = await getUserProfile(uid, email);
-                            if (data) setProfile(data);
-                          }
-                          setIsVerifying(false);
-                        }}
-                        className="flex gap-2"
-                      >
-                        <Input
-                          value={linkCode}
-                          onChange={(e) => setLinkCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                          placeholder="123456"
-                          maxLength={6}
-                          className="flex-1 h-10 bg-black/40 border-white/10 rounded-xl text-white font-mono text-center text-lg tracking-[0.5em] placeholder:tracking-normal placeholder:text-sm"
-                        />
-                        <Button
-                          type="submit"
-                          disabled={isVerifying || linkCode.length !== 6}
-                          className="bg-purple-600 hover:bg-purple-700 text-white font-bold h-10 px-4 rounded-xl transition-all"
-                        >
-                          {isVerifying ? "..." : (lang === "uz" ? "Tasdiqlash" : lang === "ru" ? "Подтвердить" : "Verify")}
-                        </Button>
-                      </form>
-                    </>
-                  )}
-                </div>
-
-                {isAdmin && (
-                  <Button 
-                    onClick={() => router.push("/admin/dashboard")}
-                    className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 border border-white/5 transition-all active:scale-95"
-                  >
-                    <Shield className="size-4" /> Admin Panel
-                  </Button>
-                )}
-                <Button 
-                  onClick={handleLogout}
-                  className="w-full bg-red-600/10 border border-red-500/20 hover:bg-red-600 text-red-500 hover:text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
-                >
-                  <LogOut className="size-4" />
-                  {lang === "uz" ? "Chiqish" : lang === "ru" ? "Выйти" : "Logout"}
-                </Button>
               </div>
             </Card>
+
+            {/* 2. MINECRAFT AKKAUNT CARD */}
+            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-7 shadow-xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="text-lg sm:text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+                  <Gamepad2 className="h-5 w-5 text-purple-400 shrink-0" />
+                  Minecraft Akkaunt
+                </CardTitle>
+                <CardDescription className="text-xs text-zinc-400 font-medium mt-1">
+                  {lang === "uz"
+                    ? "Serverda /link buyrug'ini yozing va olingan 6 raqamli kodni kiriting."
+                    : "Enter /link on server and input the 6-digit code here."}
+                </CardDescription>
+              </CardHeader>
+              
+              <div className="space-y-4">
+                {profile?.minecraftUsername ? (
+                  <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-3">
+                    <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-purple-300">
+                      <span>Ulandigan Nik:</span>
+                      <span className="font-mono text-white bg-black/40 px-2 py-0.5 rounded border border-white/5">{profile.minecraftUsername}</span>
+                    </div>
+                    <Button
+                      onClick={async () => {
+                        if (!uid) return;
+                        if (!confirm(lang === "uz" ? "Minecraft nikingizni uzmoqchimisiz?" : "Unlink Minecraft?")) return;
+                        setIsUnlinkingMc(true);
+                        const res = await unlinkMinecraftAction(uid);
+                        toast({ title: res.success ? "✅" : "❌", description: res.message });
+                        if (res.success) {
+                          const data = await getUserProfile(uid, email);
+                          if (data) setProfile(data);
+                          setMinecraftUsername(null);
+                        }
+                        setIsUnlinkingMc(false);
+                      }}
+                      disabled={isUnlinkingMc}
+                      variant="outline"
+                      className="w-full h-9 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300 text-xs font-bold rounded-lg"
+                    >
+                      <Unlink className="size-3.5 mr-1.5" />
+                      {isUnlinkingMc ? "..." : (lang === "uz" ? "Akkauntni uzish" : "Unlink Account")}
+                    </Button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!uid || !linkCode.trim()) return;
+                      setIsVerifying(true);
+                      const res = await verifyLinkCode(uid, linkCode.trim());
+                      toast({ title: res.success ? "✅" : "❌", description: res.message });
+                      if (res.success) {
+                        setLinkCode("");
+                        const data = await getUserProfile(uid, email);
+                        if (data) {
+                          setProfile(data);
+                          if (data.minecraftUsername) setMinecraftUsername(data.minecraftUsername);
+                        }
+                      }
+                      setIsVerifying(false);
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <Input
+                      type="text"
+                      placeholder="123456"
+                      value={linkCode}
+                      onChange={(e) => setLinkCode(e.target.value)}
+                      maxLength={6}
+                      className="border-white/10 focus-visible:ring-purple-500 h-11 bg-white/5 rounded-xl text-white font-mono text-center tracking-widest text-sm font-bold"
+                      required
+                      disabled={isVerifying}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={isVerifying}
+                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold h-11 px-4 rounded-xl transition-all shrink-0 text-xs sm:text-sm"
+                    >
+                      {isVerifying ? "..." : (lang === "uz" ? "Tasdiqlash" : "Verify")}
+                    </Button>
+                  </form>
+                )}
+              </div>
+            </Card>
+
+            {/* 3. BUTTONS (ADMIN PANEL & LOGOUT) */}
+            <div className="space-y-3 pt-2">
+              {isAdmin && (
+                <Button 
+                  onClick={() => router.push("/admin/dashboard")}
+                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold h-11 sm:h-12 rounded-xl flex items-center justify-center gap-2 border border-white/5 transition-all active:scale-95 text-xs sm:text-sm"
+                >
+                  <Shield className="size-4 text-purple-400" /> Admin Panel
+                </Button>
+              )}
+              <Button 
+                onClick={handleLogout}
+                className="w-full bg-red-600/10 border border-red-500/20 hover:bg-red-600 text-red-500 hover:text-white font-bold h-11 sm:h-12 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-xs sm:text-sm"
+              >
+                <LogOut className="size-4" />
+                {lang === "uz" ? "Chiqish" : lang === "ru" ? "Выйти" : "Logout"}
+              </Button>
+            </div>
+
           </div>
+
         </div>
+      </div>
+
       <Footer />
     </main>
   );
