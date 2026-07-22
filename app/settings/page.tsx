@@ -17,6 +17,7 @@ import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-pr
 import { createInpayPaymentAction, getUserPaymentsAction } from "@/app/actions/inpay";
 import { verifyLinkCode, kickPlayer, tempBanPlayer } from "@/app/actions/player-link";
 import { unlinkTelegramAction, unlinkMinecraftAction } from "@/app/actions/player-profile";
+import { getSystemSettingsAction } from "@/app/actions/system-settings";
 import { Shield, Key, Mail, User, LogOut, Check, CreditCard, Gamepad2, Ban, DoorOpen, Send, Unlink, HelpCircle, History, FileText, ExternalLink, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
@@ -46,9 +47,18 @@ export default function SettingsPage() {
 
   const [payments, setPayments] = useState<any[]>([]);
   const [isPaymentsLoading, setIsPaymentsLoading] = useState(false);
+  const [inpayEnabled, setInpayEnabled] = useState(true);
+  const [inpayNotice, setInpayNotice] = useState("");
 
   useEffect(() => {
     async function loadData() {
+      // System Settings check for InPay maintenance mode
+      const sysSettings = await getSystemSettingsAction();
+      setInpayEnabled(sysSettings.inpayEnabled);
+      if (sysSettings.inpayNoticeMessage) {
+        setInpayNotice(sysSettings.inpayNoticeMessage);
+      }
+
       if (uid) {
         const data = await getUserProfile(uid, email);
         if (data) {
@@ -520,14 +530,26 @@ export default function SettingsPage() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-black tracking-wider h-11 sm:h-12 text-xs sm:text-sm bg-primary hover:bg-primary/90 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
-                  disabled={isTopupLoading}
+                  className={`w-full font-black tracking-wider h-11 sm:h-12 text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 ${
+                    !inpayEnabled 
+                      ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-white/5" 
+                      : "bg-primary hover:bg-primary/90 text-white active:scale-95"
+                  }`}
+                  disabled={isTopupLoading || !inpayEnabled}
                 >
                   <CreditCard className="size-4" />
-                  {isTopupLoading 
+                  {!inpayEnabled 
+                    ? (lang === "uz" ? "INPAY VAQTINCHALIK O'CHIRILGAN" : "INPAY TEMPORARILY DISABLED")
+                    : isTopupLoading 
                     ? (lang === "uz" ? "TO'LDIRILMOQDA..." : "DEPOSITING...")
                     : (lang === "uz" ? "AVTO TO'LOV (INPAY)" : "AUTO PAY (INPAY)")}
                 </Button>
+
+                {!inpayEnabled && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-medium leading-relaxed">
+                    ⚠️ {inpayNotice || (lang === "uz" ? "InPay to'lov tizimida texnik ishlar olib borilmoqda. Balansni Admin orqali to'ldirishingiz mumkin." : "InPay is under maintenance. Please top up via Admin.")}
+                  </div>
+                )}
                 <Button
                   type="button"
                   onClick={() => {

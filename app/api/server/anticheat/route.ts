@@ -38,6 +38,21 @@ export async function POST(request: Request) {
       createdAt: new Date(),
     })
 
+    // Auto-register/sync server to 'servers' collection if provided
+    if (serverId && serverName) {
+      const serverRef = adminDb.collection("servers").doc(serverId)
+      const sDoc = await serverRef.get()
+      if (!sDoc.exists) {
+        await serverRef.set({
+          name: serverName,
+          displayName: serverName,
+          order: 0,
+          isActive: true,
+          createdAt: new Date(),
+        })
+      }
+    }
+
     // 2. Update or set suspect summary in anticheat_suspects
     const suspectRef = adminDb.collection("anticheat_suspects").doc(username.toLowerCase())
     const suspectDoc = await suspectRef.get()

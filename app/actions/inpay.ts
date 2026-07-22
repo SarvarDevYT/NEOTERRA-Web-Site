@@ -3,6 +3,8 @@
 import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 
+import { getSystemSettingsAction } from "@/app/actions/system-settings"
+
 export async function createInpayPaymentAction(
   productId: string,
   username: string,
@@ -12,6 +14,15 @@ export async function createInpayPaymentAction(
 ) {
   if (!adminDb) {
     return { success: false, message: "Firebase is not configured!" }
+  }
+
+  // Check system settings for InPay maintenance mode
+  const sysSettings = await getSystemSettingsAction();
+  if (!sysSettings.inpayEnabled) {
+    return {
+      success: false,
+      message: sysSettings.inpayNoticeMessage || "InPay to'lov tizimida vaqtinchalik texnik profilaktika ishlari olib borilmoqda."
+    }
   }
 
   const merchantId = process.env.INPAY_MERCHANT_ID
