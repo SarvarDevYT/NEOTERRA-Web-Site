@@ -4,49 +4,87 @@ import { adminDb } from "@/lib/firebase-admin"
 import { FieldValue } from "firebase-admin/firestore"
 import { revalidatePath } from "next/cache"
 
-export async function getServersAction() {
+export interface ServerData {
+  id: string
+  name: string
+  displayName: string
+  motd?: string
+  onlinePlayers?: number
+  maxPlayers?: number
+  version?: string
+  status: "online" | "offline"
+  lastPing?: string
+  order: number
+  isActive: boolean
+}
+
+export async function getServersAction(): Promise<ServerData[]> {
   if (!adminDb) return []
 
   try {
     const snapshot = await adminDb.collection("servers")
       .where("isActive", "==", true)
-      .orderBy("order", "asc")
       .get()
+
+    const now = Date.now()
 
     return snapshot.docs.map(doc => {
       const data = doc.data()
+      const lastPingTs = data.lastPingTimestamp || 0
+      // 2 daqiqa (120000ms) ichida ping kelgan bo'lsa ONLINE
+      const isOnline = lastPingTs > 0 && (now - lastPingTs < 120000)
+
+      const status: "online" | "offline" = isOnline ? "online" : "offline"
+
       return {
         id: doc.id,
-        name: data.name || "",
-        displayName: data.displayName || data.name || "",
+        name: data.name || doc.id,
+        displayName: data.displayName || data.name || doc.id,
+        motd: data.motd || "NeoTerra Minecraft Server",
+        onlinePlayers: data.onlinePlayers || 0,
+        maxPlayers: data.maxPlayers || 100,
+        version: data.version || "1.21.3",
+        status,
+        lastPing: data.lastPing || null,
         order: data.order || 0,
         isActive: data.isActive !== false,
       }
-    })
+    }).sort((a, b) => a.order - b.order)
   } catch (error: any) {
     console.error("getServersAction error:", error)
     return []
   }
 }
 
-export async function getAllServersAction() {
+export async function getAllServersAction(): Promise<ServerData[]> {
   if (!adminDb) return []
 
   try {
     const snapshot = await adminDb.collection("servers")
-      .orderBy("order", "asc")
       .get()
+
+    const now = Date.now()
 
     return snapshot.docs.map(doc => {
       const data = doc.data()
+      const lastPingTs = data.lastPingTimestamp || 0
+      const isOnline = lastPingTs > 0 && (now - lastPingTs < 120000)
+      const status: "online" | "offline" = isOnline ? "online" : "offline"
+
       return {
         id: doc.id,
-        name: data.name || "",
-        displayName: data.displayName || data.name || "",
+        name: data.name || doc.id,
+        displayName: data.displayName || data.name || doc.id,
+        motd: data.motd || "NeoTerra Minecraft Server",
+        onlinePlayers: data.onlinePlayers || 0,
+        maxPlayers: data.maxPlayers || 100,
+        version: data.version || "1.21.3",
+        status,
+        lastPing: data.lastPing || null,
         order: data.order || 0,
         isActive: data.isActive !== false,
       }
-    })
+    }).sort((a, b) => a.order - b.order)
   } catch (error: any) {
     console.error("getAllServersAction error:", error)
     return []
@@ -66,7 +104,6 @@ export async function createServerAction(formData: FormData) {
   }
 
   try {
-    // Check if server ID already exists
     const existing = await adminDb.collection("servers").doc(id).get()
     if (existing.exists) {
       return { success: false, message: "Bu ID bilan server allaqachon mavjud!" }

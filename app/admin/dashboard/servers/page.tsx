@@ -225,21 +225,45 @@ export default function AdminServersPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {servers.map((server) => (
+          {servers.map((server: any) => (
             <Card key={server.id} className="border-white/5 bg-zinc-900/50 rounded-2xl hover:border-purple-500/20 transition-all">
               <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-3 h-3 rounded-full ${server.isActive ? "bg-green-500 shadow-lg shadow-green-500/50" : "bg-zinc-600"}`} />
-                    <div>
-                      <h3 className="text-white font-black text-lg">{server.displayName || server.name}</h3>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-zinc-500 text-xs font-mono bg-zinc-800 px-2 py-0.5 rounded">ID: {server.id}</span>
-                        <span className="text-zinc-600 text-xs">Tartib: {server.order}</span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-3.5 h-3.5 rounded-full mt-1.5 shrink-0 ${
+                      server.status === "online" 
+                        ? "bg-green-500 shadow-lg shadow-green-500/50 animate-pulse" 
+                        : "bg-red-500/80"
+                    }`} />
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-white font-black text-lg">{server.displayName || server.name}</h3>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                          server.status === "online"
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                            : "bg-red-500/10 border-red-500/30 text-red-400"
+                        }`}>
+                          {server.status === "online" ? "🟢 ONLINE" : "🔴 OFFLINE"}
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-zinc-400 italic">
+                        {server.motd || "NeoTerra Minecraft Server"}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-zinc-500">
+                        <span className="font-mono bg-zinc-800/80 text-zinc-300 px-2 py-0.5 rounded">ID: {server.id}</span>
+                        {server.status === "online" && (
+                          <span className="text-emerald-400 font-bold">
+                            👥 {server.onlinePlayers || 0} / {server.maxPlayers || 100} o'yinchi
+                          </span>
+                        )}
+                        <span className="text-zinc-600">Tartib: {server.order}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+
+                  <div className="flex items-center gap-2 self-end md:self-center">
                     <Button
                       onClick={() => handleToggleActive(server)}
                       variant="outline"
