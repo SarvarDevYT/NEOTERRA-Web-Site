@@ -82,12 +82,42 @@ export async function updateUserBalanceAdminAction(uid: string, amount: number, 
   if (!uid || !adminDb) return { success: false, message: "Parametrlar yetarsiz" }
   try {
     const userRef = adminDb.collection("users").doc(uid)
+    const userDoc = await userRef.get()
+    const userData = userDoc.data() || {}
+
+    let addedAmount = amount
     if (isSet) {
+      const currentBalance = Number(userData.balance || 0)
+      addedAmount = amount - currentBalance
       await userRef.update({ balance: amount, updatedAt: FieldValue.serverTimestamp() })
     } else {
       await userRef.update({ balance: FieldValue.increment(amount), updatedAt: FieldValue.serverTimestamp() })
     }
-    return { success: true, message: "Balans yangilandi!" }
+
+    // Record admin balance topup transaction in payments collection
+    try {
+      const paymentRef = adminDb.collection("payments").doc()
+      await paymentRef.set({
+        id: paymentRef.id,
+        inpayOrderId: null,
+        paymentMethod: "ADMIN",
+        productId: "balance_topup",
+        username: userData.minecraftUsername || userData.email || "Admin",
+        amount: Math.abs(addedAmount > 0 ? addedAmount : amount),
+        tokenQty: null,
+        userUid: uid,
+        status: "success",
+        description: isSet ? `Admin: Balans ${amount.toLocaleString()} UZS ga o'zgartirildi` : `Admin: Balans +${amount.toLocaleString()} UZS to'ldirildi`,
+        payUrl: null,
+        receiptUrl: null,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+    } catch (payErr) {
+      console.error("Failed to log admin balance transaction:", payErr)
+    }
+
+    return { success: true, message: "Balans yangilandi va yozuv saqlandi!" }
   } catch (error: any) {
     return { success: false, message: error.message || "Xatolik" }
   }

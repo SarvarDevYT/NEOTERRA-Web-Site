@@ -74,6 +74,7 @@ export async function createInpayPaymentAction(
     await paymentRef.set({
       id: localOrderId,
       inpayOrderId: createData.order_id,
+      paymentMethod: "INPAY",
       productId: productId,
       username: username,
       amount: amount,
@@ -207,12 +208,13 @@ export async function getUserPaymentsAction(userUid: string) {
       return {
         id: doc.id,
         inpayOrderId: data.inpayOrderId || "",
+        paymentMethod: data.paymentMethod || (data.inpayOrderId ? "INPAY" : "ADMIN"),
         amount: Number(data.amount || 0),
         status: data.status || "pending",
         description: data.description || "To'lov",
         productId: data.productId || "",
         payUrl: data.payUrl || null,
-        receiptUrl: data.receiptUrl || (data.inpayOrderId ? `https://inpay.uz/r/${data.inpayOrderId}` : null),
+        receiptUrl: data.paymentMethod === "ADMIN" ? null : (data.receiptUrl || (data.inpayOrderId ? `https://inpay.uz/r/${data.inpayOrderId}` : null)),
         createdAt: createdAtDate.toISOString(),
       }
     })

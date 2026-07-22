@@ -327,6 +327,152 @@ export default function SettingsPage() {
                 )}
               </div>
             </Card>
+
+            {/* Payment History Card (To'lovlar Tarixi - Chap tomondagi 1-ustunda) */}
+            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+              
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <div>
+                  <h3 className="text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+                    <History className="size-5 text-amber-400" />
+                    {lang === "uz" ? "To'lovlar Tarixi" : lang === "ru" ? "История платежей" : "Payment History"}
+                  </h3>
+                  <p className="text-xs text-zinc-400 font-medium mt-1">
+                    {lang === "uz" 
+                      ? "InPay va Admin orqali amalga oshirilgan to'lovlar, bekor qilingan tranzaksiyalar va rasmiy cheklar." 
+                      : lang === "ru" 
+                      ? "Платежи через InPay и Admin, отмененные транзакции и официальные чеки." 
+                      : "Payments made via InPay & Admin, cancelled transactions and official receipts."}
+                  </p>
+                </div>
+
+                <Button
+                  onClick={async () => {
+                    if (uid) {
+                      setIsPaymentsLoading(true);
+                      const pData = await getUserPaymentsAction(uid);
+                      if (pData.success && pData.payments) {
+                        setPayments(pData.payments);
+                      }
+                      setIsPaymentsLoading(false);
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/5 border-white/10 hover:bg-white/10 text-white/80 rounded-xl text-xs flex items-center gap-1.5 shrink-0"
+                >
+                  <RefreshCw className={`size-3.5 ${isPaymentsLoading ? "animate-spin" : ""}`} />
+                  {lang === "uz" ? "Yangilash" : lang === "ru" ? "Обновить" : "Refresh"}
+                </Button>
+              </div>
+
+              {isPaymentsLoading ? (
+                <div className="py-8 text-center text-zinc-500 text-xs font-medium">
+                  {lang === "uz" ? "To'lovlar yuklanmoqda..." : "Loading payments..."}
+                </div>
+              ) : payments.length === 0 ? (
+                <div className="py-8 text-center text-zinc-600 text-xs font-bold uppercase tracking-wider">
+                  {lang === "uz" ? "Sizda hali to'lovlar mavjud emas" : lang === "ru" ? "У вас пока нет платежей" : "No payment history found"}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {payments.map((p) => {
+                    const isSuccess = p.status === "success" || p.status === "completed" || p.status === "paid";
+                    const isCancelled = p.status === "cancelled" || p.status === "failed" || p.status === "rejected";
+                    const isPending = p.status === "pending";
+
+                    const dateStr = new Date(p.createdAt).toLocaleString(lang === "uz" ? "uz-UZ" : "en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+
+                    const method = (p.paymentMethod || (p.inpayOrderId ? "INPAY" : "ADMIN")).toUpperCase();
+                    const receiptUrl = method === "INPAY" ? (p.receiptUrl || (p.inpayOrderId ? `https://inpay.uz/r/${p.inpayOrderId}` : null)) : null;
+
+                    return (
+                      <div
+                        key={p.id}
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-white/10 transition-all gap-4"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`p-2.5 rounded-xl border shrink-0 ${
+                              isSuccess
+                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                : isCancelled
+                                ? "bg-red-500/10 border-red-500/20 text-red-400"
+                                : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                            }`}
+                          >
+                            <CreditCard className="size-5" />
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-sm font-bold text-white flex flex-wrap items-center gap-2">
+                              {/* Payment Method Badge (INPAY vs ADMIN) */}
+                              {method === "INPAY" ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-black tracking-wider uppercase shadow-sm">
+                                  ⚡ INPAY
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-400 text-[10px] font-black tracking-wider uppercase shadow-sm">
+                                  🛡️ ADMIN
+                                </span>
+                              )}
+
+                              <span className="truncate max-w-[180px]">{p.description || "To'lov"}</span>
+                              <span className="text-amber-400 text-xs font-mono font-bold">
+                                {p.amount.toLocaleString()} UZS
+                              </span>
+                            </div>
+
+                            <div className="text-[11px] text-zinc-500 font-mono">
+                              {dateStr} {p.inpayOrderId ? `· Order: #${p.inpayOrderId}` : ""}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end shrink-0">
+                          {/* Status Badge */}
+                          <span
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                              isSuccess
+                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                : isCancelled
+                                ? "bg-red-500/10 border-red-500/20 text-red-400"
+                                : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                            }`}
+                          >
+                            {isSuccess && (lang === "uz" ? "Tasdiqlandi" : lang === "ru" ? "Успешно" : "Success")}
+                            {isCancelled && (lang === "uz" ? "Bekor qilindi" : lang === "ru" ? "Отменено" : "Cancelled")}
+                            {isPending && (lang === "uz" ? "Kutilmoqda" : lang === "ru" ? "Ожидание" : "Pending")}
+                          </span>
+
+                          {/* InPay Receipt Button (ONLY FOR INPAY PAYMENTS) */}
+                          {method === "INPAY" && receiptUrl && (
+                            <a
+                              href={receiptUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 text-xs font-bold transition-all shadow-md"
+                            >
+                              <FileText className="size-3.5" />
+                              <span>{lang === "uz" ? "Chekni ko'rish" : lang === "ru" ? "Чек" : "Receipt"}</span>
+                              <ExternalLink className="size-3 text-amber-400/60" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          </div>
           </div>
 
           <div className="md:col-span-5 space-y-6">
@@ -549,140 +695,7 @@ export default function SettingsPage() {
               </div>
             </Card>
           </div>
-
-          {/* Payment History Card (To'lovlar Tarixi) */}
-          <div className="mt-8">
-            <Card className="bg-zinc-950/60 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <History className="size-5 text-amber-400" />
-                    {lang === "uz" ? "To'lovlar Tarixi" : lang === "ru" ? "История платежей" : "Payment History"}
-                  </h3>
-                  <p className="text-xs text-white/50 mt-1">
-                    {lang === "uz" 
-                      ? "InPay orqali amalga oshirilgan to'lovlar, bekor qilingan tranzaksiyalar va rasmiy cheklar." 
-                      : lang === "ru" 
-                      ? "Платежи через InPay, отмененные транзакции и официальные чеки." 
-                      : "Payments made via InPay, cancelled transactions and official receipts."}
-                  </p>
-                </div>
-
-                <Button
-                  onClick={async () => {
-                    if (uid) {
-                      setIsPaymentsLoading(true);
-                      const pData = await getUserPaymentsAction(uid);
-                      if (pData.success && pData.payments) {
-                        setPayments(pData.payments);
-                      }
-                      setIsPaymentsLoading(false);
-                    }
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/5 border-white/10 hover:bg-white/10 text-white/80 rounded-xl text-xs flex items-center gap-1.5"
-                >
-                  <RefreshCw className={`size-3.5 ${isPaymentsLoading ? "animate-spin" : ""}`} />
-                  {lang === "uz" ? "Yangilash" : lang === "ru" ? "Обновить" : "Refresh"}
-                </Button>
-              </div>
-
-              {isPaymentsLoading ? (
-                <div className="py-8 text-center text-white/40 text-xs font-medium">
-                  {lang === "uz" ? "To'lovlar yuklanmoqda..." : "Loading payments..."}
-                </div>
-              ) : payments.length === 0 ? (
-                <div className="py-8 text-center text-white/30 text-xs font-bold uppercase tracking-wider">
-                  {lang === "uz" ? "Sizda hali to'lovlar mavjud emas" : lang === "ru" ? "У вас пока нет платежей" : "No payment history found"}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {payments.map((p) => {
-                    const isSuccess = p.status === "success" || p.status === "completed" || p.status === "paid";
-                    const isCancelled = p.status === "cancelled" || p.status === "failed" || p.status === "rejected";
-                    const isPending = p.status === "pending";
-
-                    const dateStr = new Date(p.createdAt).toLocaleString(lang === "uz" ? "uz-UZ" : "en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    });
-
-                    const receiptUrl = p.receiptUrl || (p.inpayOrderId ? `https://inpay.uz/r/${p.inpayOrderId}` : null);
-
-                    return (
-                      <div
-                        key={p.id}
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all gap-4"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`p-2.5 rounded-xl border ${
-                              isSuccess
-                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                                : isCancelled
-                                ? "bg-red-500/10 border-red-500/20 text-red-400"
-                                : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                            }`}
-                          >
-                            <CreditCard className="size-5" />
-                          </div>
-
-                          <div>
-                            <div className="text-sm font-bold text-white flex items-center gap-2">
-                              <span>{p.description || "InPay To'lov"}</span>
-                              <span className="text-amber-400 text-xs font-mono font-bold">
-                                {p.amount.toLocaleString()} UZS
-                              </span>
-                            </div>
-                            <div className="text-xs text-white/40 mt-0.5 font-mono">
-                              {dateStr} · ID: #{p.inpayOrderId || p.id.slice(0, 8)}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                          {/* Status Badge */}
-                          <span
-                            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                              isSuccess
-                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                                : isCancelled
-                                ? "bg-red-500/10 border-red-500/20 text-red-400"
-                                : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                            }`}
-                          >
-                            {isSuccess && (lang === "uz" ? "Tasdiqlandi" : lang === "ru" ? "Успешно" : "Success")}
-                            {isCancelled && (lang === "uz" ? "Bekor qilindi" : lang === "ru" ? "Отменено" : "Cancelled")}
-                            {isPending && (lang === "uz" ? "Kutilmoqda" : lang === "ru" ? "Ожидание" : "Pending")}
-                          </span>
-
-                          {/* InPay Receipt Button (Chekni ko'rish) */}
-                          {receiptUrl && (
-                            <a
-                              href={receiptUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 text-xs font-bold transition-all shadow-md"
-                            >
-                              <FileText className="size-3.5" />
-                              <span>{lang === "uz" ? "Chekni ko'rish" : lang === "ru" ? "Чек" : "Receipt"}</span>
-                              <ExternalLink className="size-3 text-amber-400/60" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
-          </div>
         </div>
-      </div>
       <Footer />
     </main>
   );
