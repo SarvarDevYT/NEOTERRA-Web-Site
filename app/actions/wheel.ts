@@ -25,7 +25,14 @@ export async function getWheelRewardsAction(): Promise<WheelReward[]> {
     const snapshot = await adminDb.collection("wheel_rewards").orderBy("order", "asc").get()
     
     if (snapshot.empty) {
-      // Default rewards if collection is empty
+      // Check if wheel settings has been initialized before
+      const settingsDoc = await adminDb.collection("settings").doc("wheel_settings").get()
+      if (settingsDoc.exists && settingsDoc.data()?.initialized) {
+        // Admin intentionally deleted all rewards
+        return []
+      }
+
+      // First time initialization: Seed default rewards directly into Firestore
       const defaultRewards: WheelReward[] = [
         { id: "1", name: "5,000 UZS Balans", type: "balance", value: "5000", chance: 30, color: "#10b981", icon: "💰", order: 1 },
         { id: "2", name: "Omadingiz kelmadi", type: "nothing", value: "", chance: 30, color: "#6b7280", icon: "😢", order: 2 },
@@ -34,6 +41,15 @@ export async function getWheelRewardsAction(): Promise<WheelReward[]> {
         { id: "5", name: "20,000 UZS Balans", type: "balance", value: "20000", chance: 8, color: "#f59e0b", icon: "🔥", order: 5 },
         { id: "6", name: "LEGEND (1 Kun)", type: "command", value: "lp user {username} parent addtemp legend 1d", chance: 2, color: "#ef4444", icon: "⚡", order: 6 },
       ]
+
+      const batch = adminDb.batch()
+      for (const reward of defaultRewards) {
+        const { id, ...data } = reward
+        batch.set(adminDb.collection("wheel_rewards").doc(id), data)
+      }
+      batch.set(adminDb.collection("settings").doc("wheel_settings"), { initialized: true })
+      await batch.commit()
+
       return defaultRewards
     }
 
@@ -52,6 +68,7 @@ export async function updateWheelRewardAction(id: string, rewardData: Partial<Wh
 
   try {
     await adminDb.collection("wheel_rewards").doc(id).set(rewardData, { merge: true })
+    await adminDb.collection("settings").doc("wheel_settings").set({ initialized: true }, { merge: true })
     revalidatePath("/admin/dashboard/wheel")
     revalidatePath("/wheel")
     return { success: true, message: "Sovg'a saqlandi!" }
@@ -66,6 +83,7 @@ export async function deleteWheelRewardAction(id: string) {
 
   try {
     await adminDb.collection("wheel_rewards").doc(id).delete()
+    await adminDb.collection("settings").doc("wheel_settings").set({ initialized: true }, { merge: true })
     revalidatePath("/admin/dashboard/wheel")
     revalidatePath("/wheel")
     return { success: true, message: "Sovg'a o'chirildi!" }
