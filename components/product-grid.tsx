@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation"
 
 import { useTranslation } from "@/hooks/use-translation"
 
-const CATEGORIES = ["RANKLAR", "KEYS-LAR", "VALYUTA", "UNBAN/UNMUTE"]
+const CATEGORIES = ["RANKLAR", "KEYS-LAR", "G'ILDIRAK", "VALYUTA", "UNBAN/UNMUTE"]
 
 interface Product {
   id: string;
@@ -354,8 +354,19 @@ export function ProductGrid() {
 
         <div className="flex flex-wrap justify-center gap-2 p-2 glass-effect rounded-[2.5rem]">
           {CATEGORIES.map((cat) => {
+            if (cat === "G'ILDIRAK") {
+              return (
+                <button
+                  key={cat}
+                  onClick={() => router.push("/wheel")}
+                  className="px-8 py-3 rounded-full text-xs font-black transition-all duration-500 bg-purple-600/30 text-purple-200 border border-purple-500/50 hover:bg-purple-600 hover:text-white shadow-lg shadow-purple-600/30 flex items-center gap-2"
+                >
+                  🎡 {lang === "uz" ? "OMAD G'ILDIRAGI" : lang === "ru" ? "КОЛЕСО УДАЧИ" : "LUCKY WHEEL"}
+                </button>
+              );
+            }
+
             const key = getTranslatedCategoryKey(cat);
-            // Translate categories safely by using t with section shop and accessing keyslar, ranklar, valyuta, unban
             return (
               <button
                 key={cat}

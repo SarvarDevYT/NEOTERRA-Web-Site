@@ -80,15 +80,14 @@ export function Navbar() {
 
 
   const navLinks = [
-    { name: t("nav", "home"), href: "/" },
-    { name: t("nav", "news"), href: "/news" },
-    { name: t("nav", "shop"), href: "/shop" },
-    { name: "🎡 G'ildirak", href: "/wheel" },
-    { name: "🏆 Toplar", href: "/stats" },
-    { name: "🔨 Banlar", href: "/bans" },
-    { name: t("nav", "staff"), href: "/staff" },
-    { name: t("nav", "rules"), href: "/rules" },
-    { name: t("nav", "help"), href: "/help" },
+    { name: "🏠 " + t("nav", "home"), href: "/" },
+    { name: "📰 " + t("nav", "news"), href: "/news" },
+    { name: "🛒 " + t("nav", "shop"), href: "/shop" },
+    { name: "📊 Statistika", href: "/stats" },
+    { name: "⚖️ Jazolar", href: "/bans" },
+    { name: "👥 " + t("nav", "staff"), href: "/staff" },
+    { name: "📜 " + t("nav", "rules"), href: "/rules" },
+    { name: "❓ " + t("nav", "help"), href: "/help" },
   ]
 
   const handleGoogleLogin = async () => {
