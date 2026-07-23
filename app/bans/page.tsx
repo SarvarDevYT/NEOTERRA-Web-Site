@@ -65,7 +65,7 @@ export default function BansPage() {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-red-600/10 blur-[140px] rounded-full pointer-events-none" />
 
       <div className="container max-w-5xl mx-auto px-4 relative z-10 space-y-8">
-        {/* Sub Navigation (Bans | Anticheat | Mutelar) */}
+        {/* Sub Navigation (Bans & Mutes | Anticheat) */}
         <div className="flex justify-center mb-6">
           <div className="flex items-center gap-2 p-1.5 bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
             <Link
@@ -73,7 +73,7 @@ export default function BansPage() {
               className="px-6 py-2.5 rounded-xl text-xs font-black transition-all bg-red-600 text-white shadow-lg shadow-red-600/30 flex items-center gap-2 uppercase tracking-wider"
             >
               <Gavel className="size-4" />
-              BANLAR VA APELLATSIYA
+              BANLAR VA MUTELAR
             </Link>
 
             <Link
@@ -83,26 +83,18 @@ export default function BansPage() {
               <ShieldAlert className="size-4" />
               ANTICHEAT
             </Link>
-
-            <Link
-              href="/bans"
-              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
-            >
-              <MessageSquare className="size-4" />
-              MUTELAR
-            </Link>
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-widest mb-2">
-              <Gavel className="h-4 w-4" /> SERVER JAZOLARI VA APELLATSIYA
+              <Gavel className="h-4 w-4" /> SERVER JAZOLARI (BAN VA MUTE)
             </div>
             <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter liquid-shadow">
-              BANLAR VA <span className="text-red-500">APELLATSIYALAR</span>
+              BANLAR, MUTELAR VA <span className="text-red-500">APELLATSIYALAR</span>
             </h1>
             <p className="text-zinc-400 text-sm max-w-xl mt-1">
-              Noto&apos;g&apos;ri ban olgan deb hisoblasangiz, apellyatsiya shaklini to&apos;ldiring. Adminlar arizangizni tekshirib chiqishadi.
+              Noto&apos;g&apos;ri ban yoki mute olgan deb hisoblasangiz, apellyatsiya shaklini to&apos;ldiring. Adminlar arizangizni tekshirib chiqishadi.
             </p>
           </div>
 

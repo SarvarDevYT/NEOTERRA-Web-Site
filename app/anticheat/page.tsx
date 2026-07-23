@@ -269,7 +269,7 @@ export default function AnticheatPage() {
       <main className="flex-1 pt-32 pb-20">
         <div className="container mx-auto px-4 max-w-6xl">
         
-        {/* Sub Navigation (Bans | Anticheat | Mutes) */}
+        {/* Sub Navigation (Bans & Mutes | Anticheat) */}
         <div className="flex justify-center mb-10">
           <div className="flex items-center gap-2 p-1.5 glass-effect rounded-2xl border border-white/10">
             <Link
@@ -277,7 +277,7 @@ export default function AnticheatPage() {
               className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
             >
               <Gavel className="size-4" />
-              BANLAR
+              BANLAR VA MUTELAR
             </Link>
 
             <Link
@@ -286,14 +286,6 @@ export default function AnticheatPage() {
             >
               <ShieldAlert className="size-4" />
               ANTICHEAT
-            </Link>
-
-            <Link
-              href="/bans"
-              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
-            >
-              <MessageSquare className="size-4" />
-              MUTELAR
             </Link>
           </div>
         </div>
