@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dices, Sparkles, AlertCircle, Clock, ShieldCheck, Gamepad2, Gift } from "lucide-react";
@@ -10,7 +10,7 @@ import { getWheelRewardsAction, spinWheelAction, WheelReward } from "@/app/actio
 import Link from "next/link";
 
 export default function WheelPage() {
-  const { user, profile } = useAuth();
+  const { uid, minecraftUsername } = useAuth();
   const [rewards, setRewards] = useState<WheelReward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -29,11 +29,11 @@ export default function WheelPage() {
   }
 
   async function handleSpin() {
-    if (!user) {
+    if (!uid) {
       toast.error("Omad g'ildiragini aylantirish uchun avval tizimga kiring!");
       return;
     }
-    if (!profile?.minecraftUsername) {
+    if (!minecraftUsername) {
       toast.error("Avval profilizda Minecraft akkauntingizni (/link) bog'lang!");
       return;
     }
@@ -42,7 +42,7 @@ export default function WheelPage() {
     setIsSpinning(true);
     setWonReward(null);
 
-    const res = await spinWheelAction(user.uid);
+    const res = await spinWheelAction(uid);
 
     if (!res.success) {
       toast.error(res.message);
@@ -93,7 +93,7 @@ export default function WheelPage() {
           </p>
         </div>
 
-        {!user ? (
+        {!uid ? (
           <Card className="border-purple-500/30 bg-purple-500/5 max-w-md mx-auto rounded-3xl p-6 text-center">
             <ShieldCheck className="h-10 w-10 text-purple-400 mx-auto mb-2" />
             <h3 className="text-white font-black text-lg">TIZIMGA KIRISh TALAB ETILADI</h3>
@@ -102,7 +102,7 @@ export default function WheelPage() {
               <Link href="/auth">Kirish / Ro&apos;yxatdan o&apos;tish</Link>
             </Button>
           </Card>
-        ) : !profile?.minecraftUsername ? (
+        ) : !minecraftUsername ? (
           <Card className="border-amber-500/30 bg-amber-500/5 max-w-md mx-auto rounded-3xl p-6 text-center">
             <Gamepad2 className="h-10 w-10 text-amber-400 mx-auto mb-2" />
             <h3 className="text-white font-black text-lg">MINECRAFT AKKAUNTINGIZNI BOG'LANG</h3>
@@ -157,7 +157,7 @@ export default function WheelPage() {
           <div className="absolute z-20 w-20 h-20 md:w-24 md:h-24 bg-zinc-950 border-4 border-purple-500 rounded-full flex items-center justify-center shadow-2xl shadow-purple-500/50">
             <Button
               onClick={handleSpin}
-              disabled={isSpinning || !user || !profile?.minecraftUsername}
+              disabled={isSpinning || !uid || !minecraftUsername}
               className="w-full h-full rounded-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs md:text-sm uppercase italic tracking-tighter flex flex-col items-center justify-center p-0 transition-transform active:scale-90"
             >
               {isSpinning ? (

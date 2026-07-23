@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { getBanAppealsAction, submitBanAppealAction, BanAppeal } from "@/app/actions/bans";
 
 export default function BansPage() {
-  const { user, profile } = useAuth();
+  const { uid, minecraftUsername } = useAuth();
   const [appeals, setAppeals] = useState<BanAppeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -45,7 +45,7 @@ export default function BansPage() {
     const reason = String(formData.get("reason") ?? "").trim();
     const appealText = String(formData.get("appealText") ?? "").trim();
 
-    const res = await submitBanAppealAction(username, reason, appealText, user?.uid);
+    const res = await submitBanAppealAction(username, reason, appealText, uid || undefined);
     if (res.success) {
       toast.success(res.message);
       setIsDialogOpen(false);
@@ -93,7 +93,7 @@ export default function BansPage() {
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Minecraft Nikingiz</Label>
                   <Input
                     name="username"
-                    defaultValue={profile?.minecraftUsername || ""}
+                    defaultValue={minecraftUsername || ""}
                     placeholder="Masalan: Steve"
                     required
                     className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold"
