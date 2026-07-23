@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       ...serverLines,
       ``,
       `📅 <i>Vaqt: ${timeStr}</i>`,
-      `🌐 <i>Sayt: neoterra.uz</i>`,
+      `🌐 <i>Sayt: <a href="https://site.neoterra.uz">site.neoterra.uz</a></i>`,
     ].join("\n")
 
     const res = await sendTelegramAdminNotificationAction(reportText)
