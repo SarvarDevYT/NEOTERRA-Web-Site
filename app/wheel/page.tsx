@@ -8,6 +8,7 @@ import { Dices, Sparkles, AlertCircle, Clock, ShieldCheck, Gamepad2, Gift } from
 import { toast } from "sonner";
 import { getWheelRewardsAction, spinWheelAction, WheelReward } from "@/app/actions/wheel";
 import Link from "next/link";
+import { Footer } from "@/components/footer";
 
 export default function WheelPage() {
   const { uid, minecraftUsername } = useAuth();
@@ -83,7 +84,8 @@ export default function WheelPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-black text-white relative overflow-hidden flex flex-col items-center justify-center">
+    <div className="flex flex-col min-h-screen bg-black justify-between text-white relative overflow-hidden">
+      <main className="flex-1 pt-24 pb-12 flex flex-col items-center justify-center">
       {/* Background Gradients */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/15 blur-[140px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 left-1/3 w-[400px] h-[400px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
@@ -229,6 +231,8 @@ export default function WheelPage() {
           </Card>
         )}
       </div>
+      </main>
+      <Footer />
     </div>
   );
 }

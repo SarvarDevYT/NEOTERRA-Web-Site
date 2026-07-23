@@ -18,6 +18,7 @@ import { ShieldAlert, Gavel, FileText, Send, CheckCircle2, Clock, XCircle, Messa
 import { toast } from "sonner";
 import { getBanAppealsAction, submitBanAppealAction, BanAppeal } from "@/app/actions/bans";
 import Link from "next/link";
+import { Footer } from "@/components/footer";
 
 export default function BansPage() {
   const { uid, minecraftUsername } = useAuth();
@@ -58,7 +59,8 @@ export default function BansPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-black text-white relative overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-black justify-between text-white relative overflow-hidden">
+      <main className="flex-1 pt-24 pb-12">
       {/* Background Glow */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-red-600/10 blur-[140px] rounded-full pointer-events-none" />
 
@@ -203,6 +205,8 @@ export default function BansPage() {
           )}
         </div>
       </div>
+      </main>
+      <Footer />
     </div>
   );
 }

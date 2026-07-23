@@ -47,8 +47,9 @@ export default function StatsPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-background pt-32 pb-16">
-      <section className="container mx-auto px-4 py-8">
+    <div className="flex flex-col min-h-screen bg-background justify-between">
+      <main className="flex-1 pt-32 pb-12">
+        <section className="container mx-auto px-4 py-8">
         <h1 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter mb-4 text-center liquid-shadow">
           SERVER <span className="text-purple-500">STATISTIKASI VA TOPLAR</span>
         </h1>
@@ -187,8 +188,9 @@ export default function StatsPage() {
           )}
         </div>
       </section>
+      </main>
       <Footer />
-    </main>
+    </div>
   )
 }
 
