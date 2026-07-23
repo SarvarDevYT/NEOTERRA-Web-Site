@@ -267,9 +267,9 @@ export function Navbar() {
             <div className="flex items-center gap-2 shrink-0">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/10 hover:bg-white/20 transition-all h-10 shadow-lg group">
-                    <UserIcon className="size-4 text-primary group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold uppercase tracking-tight text-white max-w-[120px] truncate">
+                  <Button variant="ghost" className="flex items-center gap-1.5 sm:gap-2 bg-white/10 px-2.5 sm:px-4 py-2 rounded-full border border-white/10 hover:bg-white/20 transition-all h-10 shadow-lg group">
+                    <UserIcon className="size-4 text-primary group-hover:scale-110 transition-transform shrink-0" />
+                    <span className="text-xs font-bold uppercase tracking-tight text-white max-w-[80px] sm:max-w-[120px] truncate">
                       {minecraftUsername || email?.split("@")[0]}
                     </span>
                   </Button>
@@ -515,7 +515,7 @@ export function Navbar() {
               const nextIndex = (order.indexOf(lang) + 1) % order.length
               setLang(order[nextIndex])
             }}
-            className="font-bold text-xs rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3 shrink-0"
+            className="hidden md:inline-flex font-bold text-xs rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3 shrink-0"
           >
             {lang.toUpperCase()}
           </Button>
@@ -525,37 +525,58 @@ export function Navbar() {
               <Button
                 variant="outline"
                 size="icon"
-                className="md:hidden glass-pill border-white/10 bg-white/5 hover:bg-white/10 size-10"
+                className="md:hidden glass-pill border-white/10 bg-white/5 hover:bg-white/10 size-10 shrink-0"
               >
                 <Menu className="size-5 text-white" />
               </Button>
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="glass-effect border-white/10 text-white backdrop-blur-[40px] bg-white/5 shadow-[0_8px_64px_rgba(0,0,0,0.5)] border-l"
+              className="glass-effect border-white/10 text-white backdrop-blur-[40px] bg-zinc-950/95 shadow-[0_8px_64px_rgba(0,0,0,0.5)] border-l flex flex-col justify-between p-6"
             >
-              <SheetHeader>
-                <SheetTitle className="text-xl font-black text-primary uppercase italic tracking-tighter liquid-shadow">
-                  NEO <span className="text-white">TERRA</span>
-                </SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-col gap-8 mt-12 text-center">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      "text-xl font-bold tracking-[0.2em] transition-all duration-300",
-                      pathname === link.href
-                        ? "text-primary scale-110"
-                        : "text-white/40 hover:text-white hover:scale-105",
-                    )}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-              </nav>
+              <div>
+                <SheetHeader>
+                  <SheetTitle className="text-xl font-black text-primary uppercase italic tracking-tighter liquid-shadow">
+                    NEO <span className="text-white">TERRA</span>
+                  </SheetTitle>
+                </SheetHeader>
+
+                {/* Mobile Language Switcher */}
+                <div className="flex items-center justify-center gap-1.5 mt-6 p-1.5 bg-white/5 rounded-2xl border border-white/10">
+                  {(['uz', 'ru', 'en'] as Language[]).map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => setLang(l)}
+                      className={cn(
+                        "flex-1 py-2 text-xs font-black uppercase rounded-xl transition-all duration-300",
+                        lang === l
+                          ? "bg-primary text-white shadow-lg shadow-primary/30"
+                          : "text-white/40 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      {l.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+
+                <nav className="flex flex-col gap-6 mt-8 text-center">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        "text-lg font-bold tracking-[0.15em] transition-all duration-300 py-1",
+                        pathname === link.href
+                          ? "text-primary scale-105"
+                          : "text-white/50 hover:text-white hover:scale-105",
+                      )}
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
             </SheetContent>
           </Sheet>
         </div>
