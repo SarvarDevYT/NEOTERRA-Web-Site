@@ -44,21 +44,6 @@ export default function AdminServersPage() {
     setIsLoading(false);
   }
 
-  async function handleAddServer(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
-    const result = await createServerAction(formData);
-    if (result.success) {
-      toast.success("Server qo'shildi!");
-      setIsDialogOpen(false);
-      fetchServers();
-    } else {
-      toast.error(result.message);
-    }
-    setIsSubmitting(false);
-  }
-
   async function handleDelete(id: string) {
     if (!confirm(`"${id}" serverini o'chirmoqchimisiz? Bu serverdagi barcha donatlar ham ishlashdan to'xtaydi!`)) return;
     const result = await deleteServerAction(id);

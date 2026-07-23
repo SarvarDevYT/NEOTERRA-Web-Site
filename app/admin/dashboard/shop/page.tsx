@@ -163,7 +163,7 @@ export default function AdminShopPage() {
 
         <div className="flex items-center gap-3">
           <Button
-            onClick={() => { fetchProducts(); fetchServers(); }}
+            onClick={() => { fetchProducts(); loadServers(); }}
             disabled={isLoading}
             variant="outline"
             className="border-white/10 text-white hover:bg-white/5 font-bold gap-2 rounded-xl"
