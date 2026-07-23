@@ -46,3 +46,33 @@ export async function getTelegramWebhookInfoAction() {
     return { success: false, message: error.message || "Failed to get webhook info." }
   }
 }
+
+export async function sendTelegramAdminNotificationAction(text: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || "-1003795941461"
+
+  if (!token || !chatId) {
+    return { success: false, message: "Telegram bot token or admin chat ID missing!" }
+  }
+
+  try {
+    const url = `https://api.telegram.org/bot${token}/sendMessage`
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      }),
+      cache: "no-store",
+    })
+    const data = await res.json()
+    return { success: data.ok, message: data.description }
+  } catch (error: any) {
+    console.error("sendTelegramAdminNotification error:", error)
+    return { success: false, message: error.message }
+  }
+}
+

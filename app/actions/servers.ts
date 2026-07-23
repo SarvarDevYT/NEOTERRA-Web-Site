@@ -169,3 +169,57 @@ export async function deleteServerAction(id: string) {
     return { success: false, message: error.message || "Xatolik yuz berdi" }
   }
 }
+
+export async function sendConsoleCommandAction(serverId: string, command: string) {
+  if (!adminDb) return { success: false, message: "Firebase Admin sozlanmagan!" }
+
+  const cmd = command.trim()
+  if (!cmd) return { success: false, message: "Buyruq bo'sh bo'lishi mumkin emas!" }
+
+  try {
+    const docRef = await adminDb.collection("commands_queue").add({
+      command: cmd.startsWith("/") ? cmd.substring(1) : cmd,
+      username: "CONSOLE_ADMIN",
+      serverId: serverId || "",
+      isInteractiveConsole: true,
+      status: "pending",
+      createdAt: FieldValue.serverTimestamp(),
+    })
+
+    return { success: true, commandId: docRef.id, message: "Buyruq yuborildi!" }
+  } catch (error: any) {
+    console.error("sendConsoleCommandAction error:", error)
+    return { success: false, message: error.message || "Xatolik yuz berdi" }
+  }
+}
+
+export async function getConsoleLogsAction(serverId: string) {
+  if (!adminDb) return []
+
+  try {
+    const snapshot = await adminDb.collection("commands_queue")
+      .orderBy("createdAt", "desc")
+      .limit(30)
+      .get()
+
+    return snapshot.docs
+      .map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          command: data.command,
+          username: data.username || "Console",
+          serverId: data.serverId || "",
+          status: data.status,
+          responseLog: data.responseLog || null,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+        }
+      })
+      .filter(item => !serverId || !item.serverId || item.serverId === serverId)
+      .reverse()
+  } catch (error: any) {
+    console.error("getConsoleLogsAction error:", error)
+    return []
+  }
+}
+

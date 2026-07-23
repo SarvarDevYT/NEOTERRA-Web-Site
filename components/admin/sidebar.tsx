@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Newspaper, Gavel, LogOut, LayoutDashboard, Shield, ShoppingBag, Users, Server } from "lucide-react";
+import { Home, Newspaper, Gavel, LogOut, LayoutDashboard, Shield, ShoppingBag, Users, Server, Dices, Tag } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,9 @@ export function AdminSidebar() {
     { title: "Foydalanuvchilar", icon: Users, href: "/admin/dashboard/users" },
     { title: "Serverlar", icon: Server, href: "/admin/dashboard/servers" },
     { title: "Do'kon", icon: ShoppingBag, href: "/admin/dashboard/shop" },
+    { title: "Promokodlar", icon: Tag, href: "/admin/dashboard/promocodes" },
+    { title: "Ban Apellyatsiyalari", icon: Gavel, href: "/admin/dashboard/appeals" },
+    { title: "Omad G'ildiragi", icon: Dices, href: "/admin/dashboard/wheel" },
     { title: "Yangiliklar", icon: Newspaper, href: "/admin/dashboard/news" },
     { title: "Qoidalar", icon: Gavel, href: "/admin/dashboard/rules" },
     { title: "Jamoa", icon: Shield, href: "/admin/dashboard/staff" },

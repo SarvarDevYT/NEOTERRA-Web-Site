@@ -8,15 +8,18 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Trash2, Plus, Server, Copy, Check, Shield, RefreshCw } from "lucide-react";
+import { Trash2, Plus, Server, Copy, Check, Shield, RefreshCw, Terminal, Send } from "lucide-react";
 import { toast } from "sonner";
-import { getAllServersAction, createServerAction, updateServerAction, deleteServerAction } from "@/app/actions/servers";
+import { 
+  getAllServersAction, 
+  updateServerAction, 
+  deleteServerAction,
+  sendConsoleCommandAction,
+  getConsoleLogsAction
+} from "@/app/actions/servers";
 
 interface ServerItem {
   id: string;
@@ -24,6 +27,10 @@ interface ServerItem {
   displayName: string;
   order: number;
   isActive: boolean;
+  status?: string;
+  motd?: string;
+  onlinePlayers?: number;
+  maxPlayers?: number;
 }
 
 export default function AdminServersPage() {
@@ -31,11 +38,51 @@ export default function AdminServersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [copiedKey, setCopiedKey] = useState(false);
 
+  // Console state
+  const [activeConsoleServer, setActiveConsoleServer] = useState<ServerItem | null>(null);
+  const [consoleLogs, setConsoleLogs] = useState<any[]>([]);
+  const [commandInput, setCommandInput] = useState("");
+  const [isSendingCmd, setIsSendingCmd] = useState(false);
+
   const GLOBAL_SECRET_KEY = "neoterra2026Nsarvar2010Sneoterrateamuz";
 
   useEffect(() => {
     fetchServers();
   }, []);
+
+  useEffect(() => {
+    let interval: any;
+    if (activeConsoleServer) {
+      fetchConsoleLogs(activeConsoleServer.id);
+      interval = setInterval(() => {
+        fetchConsoleLogs(activeConsoleServer.id);
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [activeConsoleServer]);
+
+  async function fetchConsoleLogs(serverId: string) {
+    const logs = await getConsoleLogsAction(serverId);
+    setConsoleLogs(logs);
+  }
+
+  async function handleSendConsoleCommand(e: React.FormEvent) {
+    e.preventDefault();
+    if (!commandInput.trim() || !activeConsoleServer) return;
+
+    setIsSendingCmd(true);
+    const cmd = commandInput.trim();
+    setCommandInput("");
+
+    const res = await sendConsoleCommandAction(activeConsoleServer.id, cmd);
+    if (res.success) {
+      toast.success("Buyruq yuborildi!");
+      fetchConsoleLogs(activeConsoleServer.id);
+    } else {
+      toast.error(res.message);
+    }
+    setIsSendingCmd(false);
+  }
 
   async function fetchServers() {
     setIsLoading(true);
@@ -82,7 +129,7 @@ export default function AdminServersPage() {
           <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Serverlar Boshqaruvi
           </h1>
-          <p className="text-zinc-400">Minecraft serverlarni monitoring qiling va boshqaring.</p>
+          <p className="text-zinc-400">Minecraft serverlarni monitoring qiling va masofadan boshqaring.</p>
         </div>
 
         <Button
@@ -96,7 +143,6 @@ export default function AdminServersPage() {
         </Button>
       </div>
 
-      {/* Global Secret Key Card */}
       <Card className="border-purple-500/20 bg-purple-500/5 rounded-2xl">
         <CardContent className="p-5">
           <div className="flex items-center gap-3 mb-3">
@@ -117,22 +163,6 @@ export default function AdminServersPage() {
               {copiedKey ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
             </button>
           </div>
-          <p className="text-amber-500/80 text-[10px] mt-2 font-bold ml-1">
-            ⚠️ Bu kalitni har bir Minecraft server&apos;dagi plugin <code className="text-blue-400">config.yml</code> → <code className="text-blue-400">api.secret-key</code> ga qo&apos;ying. Vercel&apos;da ham <code className="text-blue-400">SERVER_API_KEY</code> sifatida o&apos;rnatilgan.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Info Card */}
-      <Card className="border-blue-500/20 bg-blue-500/5 rounded-2xl">
-        <CardContent className="p-4 text-sm text-blue-300 space-y-2">
-          <p className="font-bold text-blue-400">📋 Qanday ishlaydi:</p>
-          <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-400">
-            <li>Minecraft serveringizdagi <code className="text-blue-400">NeoTerraCore/config.yml</code> faylida <strong className="text-white">server-id</strong> va <strong className="text-white">server-name</strong> o&apos;rnating</li>
-            <li><code className="text-blue-400">config.yml</code> dagi <strong className="text-white">secret-key</strong> ga yuqoridagi global kalitni nusxalang</li>
-            <li>Serverni yoqing yoki <code className="text-blue-400">/neoterra reload</code> qiling — server avtomatik ravshda shu yerda va sayt do&apos;konida paydo bo&apos;ladi!</li>
-            <li>Status va o&apos;yinchilar soni har 30 soniyada avtomatik yangilanib turadi</li>
-          </ol>
         </CardContent>
       </Card>
 
@@ -144,7 +174,6 @@ export default function AdminServersPage() {
           <CardContent className="text-center py-16">
             <Server className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
             <p className="text-zinc-500 font-bold">Hali hech qanday server ulanmagan</p>
-            <p className="text-zinc-600 text-sm mt-1">Minecraft serveringizda NeoTerraCore plaginini yoqing, server avtomatik ro&apos;yxatdan o&apos;tadi.</p>
           </CardContent>
         </Card>
       ) : (
@@ -162,17 +191,6 @@ export default function AdminServersPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
                         <h3 className="text-white font-black text-lg">{server.displayName || server.name}</h3>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                          server.status === "online"
-                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                            : "bg-red-500/10 border-red-500/30 text-red-400"
-                        }`}>
-                          {server.status === "online" ? "🟢 ONLINE" : "🔴 OFFLINE"}
-                        </span>
-                      </div>
-
-                      <div className="text-xs text-zinc-400 italic">
-                        {server.motd || "NeoTerra Minecraft Server"}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-zinc-500">
@@ -182,12 +200,17 @@ export default function AdminServersPage() {
                             👥 {server.onlinePlayers || 0} / {server.maxPlayers || 100} o'yinchi
                           </span>
                         )}
-                        <span className="text-zinc-600">Tartib: {server.order}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 self-end md:self-center">
+                    <Button
+                      onClick={() => setActiveConsoleServer(server)}
+                      className="bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white rounded-xl text-xs font-bold gap-2 border border-purple-500/30"
+                    >
+                      <Terminal className="h-4 w-4" /> Live Konsol
+                    </Button>
                     <Button
                       onClick={() => handleToggleActive(server)}
                       variant="outline"
@@ -211,6 +234,64 @@ export default function AdminServersPage() {
           ))}
         </div>
       )}
+
+      {/* Live Web Console Modal */}
+      <Dialog open={!!activeConsoleServer} onOpenChange={(open) => !open && setActiveConsoleServer(null)}>
+        <DialogContent className="sm:max-w-[700px] border-white/10 bg-black/95 text-white rounded-[2rem] p-6 shadow-2xl shadow-purple-500/20">
+          <DialogHeader className="flex flex-row items-center justify-between pb-3 border-b border-white/10">
+            <div>
+              <DialogTitle className="text-xl font-black text-purple-400 uppercase italic flex items-center gap-2">
+                <Terminal className="h-5 w-5" /> WEB KONSOL — {activeConsoleServer?.displayName || activeConsoleServer?.name}
+              </DialogTitle>
+              <p className="text-xs text-zinc-500 mt-0.5">NeoTerraCore orqali 100% xavfsiz masofaviy buyruq ijro etish oynasi.</p>
+            </div>
+          </DialogHeader>
+
+          {/* Terminal Screen */}
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 h-[350px] overflow-y-auto font-mono text-xs space-y-2 text-zinc-300">
+            <div className="text-zinc-600 italic">=== Live Web Console Connected (ID: {activeConsoleServer?.id}) ===</div>
+            {consoleLogs.length === 0 ? (
+              <div className="text-zinc-600 py-10 text-center">Konsol buyruqlari jurnali bo'sh...</div>
+            ) : (
+              consoleLogs.map((log) => (
+                <div key={log.id} className="space-y-0.5 border-b border-zinc-900/60 pb-1.5">
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <span className="text-purple-400 font-bold">[{log.username}]</span>
+                    <span className="text-zinc-500">{log.createdAt ? new Date(log.createdAt).toLocaleTimeString() : ""}</span>
+                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                      log.status === "executed" ? "bg-emerald-500/20 text-emerald-400" :
+                      log.status === "pending" ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"
+                    }`}>
+                      {log.status}
+                    </span>
+                  </div>
+                  <div className="text-emerald-400 font-bold pl-2">&gt; {log.command}</div>
+                  {log.responseLog && (
+                    <div className="text-zinc-400 pl-4 whitespace-pre-wrap">{log.responseLog}</div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Input Prompt */}
+          <form onSubmit={handleSendConsoleCommand} className="flex gap-2 pt-2">
+            <Input
+              value={commandInput}
+              onChange={(e) => setCommandInput(e.target.value)}
+              placeholder="Masalan: say Assalomu alaykum! yoki give Player diamond 64"
+              className="border-white/10 bg-white/5 h-12 rounded-xl font-mono text-xs text-emerald-400 focus:ring-purple-500"
+            />
+            <Button
+              type="submit"
+              disabled={isSendingCmd || !commandInput.trim()}
+              className="bg-purple-600 hover:bg-purple-700 font-bold h-12 px-6 rounded-xl gap-2 shrink-0"
+            >
+              <Send className="h-4 w-4" /> Yuborish
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

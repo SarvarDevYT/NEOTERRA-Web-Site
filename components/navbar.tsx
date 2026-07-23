@@ -83,12 +83,12 @@ export function Navbar() {
     { name: t("nav", "home"), href: "/" },
     { name: t("nav", "news"), href: "/news" },
     { name: t("nav", "shop"), href: "/shop" },
-    { name: t("nav", "stats"), href: "/stats" },
+    { name: "🎡 G'ildirak", href: "/wheel" },
+    { name: "🏆 Toplar", href: "/stats" },
+    { name: "🔨 Banlar", href: "/bans" },
     { name: t("nav", "staff"), href: "/staff" },
-    { name: t("nav", "bans"), href: "/bans" },
     { name: t("nav", "rules"), href: "/rules" },
     { name: t("nav", "help"), href: "/help" },
-    { name: t("nav", "social"), href: "/social" },
   ]
 
   const handleGoogleLogin = async () => {

@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    const { id, status } = data
+    const { id, status, output, responseLog } = data
 
     if (!id || !status) {
       return NextResponse.json({ error: "Missing id or status" }, { status: 400 })
@@ -86,6 +86,7 @@ export async function POST(request: Request) {
 
     await commandDocRef.update({
       status: status,
+      responseLog: output || responseLog || (status === "executed" ? "Command executed successfully." : "Execution failed."),
       updatedAt: new Date(),
     })
 
