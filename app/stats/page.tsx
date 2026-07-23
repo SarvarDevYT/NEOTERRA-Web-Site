@@ -24,7 +24,7 @@ export default function StatsPage() {
   const [status, setStatus] = useState<ServerStatus | null>(null)
   const [topUsers, setTopUsers] = useState<TopUser[]>([])
   const IP = "play.neoterra.uz"
-  const { lang } = useTranslation()
+  const { t } = useTranslation()
 
   useEffect(() => {
     async function fetchStatus() {
@@ -51,17 +51,17 @@ export default function StatsPage() {
       <main className="flex-1 pt-32 pb-12">
         <section className="container mx-auto px-4 py-8">
         <h1 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter mb-4 text-center liquid-shadow">
-          SERVER <span className="text-purple-500">STATISTIKASI VA TOPLAR</span>
+          {t("stats", "title")}
         </h1>
         <p className="text-center text-zinc-400 max-w-xl mx-auto mb-16 text-sm">
-          NeoTerra tarmoq serverlarining tirik statistikasi va eng boy/faol o&apos;yinchilar reytingi.
+          {t("stats", "subtitle")}
         </p>
 
         {/* TOP 3 PODIUM SHOWCASE */}
         {topUsers.length >= 3 && (
           <div className="mb-20">
             <h2 className="text-2xl font-black text-white italic uppercase text-center mb-10 flex items-center justify-center gap-2">
-              <Trophy className="h-6 w-6 text-amber-400 animate-bounce" /> ENG BOY O&apos;YINCHILAR TOP 3 TALIGI
+              <Trophy className="h-6 w-6 text-amber-400 animate-bounce" /> {t("stats", "topRichest")}
             </h2>
             <div className="flex flex-col md:flex-row items-end justify-center gap-6 max-w-4xl mx-auto px-4">
               {/* #2 SECOND PLACE */}

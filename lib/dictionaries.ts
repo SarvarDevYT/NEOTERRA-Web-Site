@@ -60,13 +60,30 @@ export const dict = {
       noRules: "Hozircha qoidalar kiritilmagan."
     },
     stats: {
-      title: "SERVER STATISTIKASI",
-      subtitle: "Serverdagi eng faol o'yinchilar va umumiy ma'lumotlar.",
+      title: "SERVER STATISTIKASI VA TOPLAR",
+      subtitle: "NeoTerra tarmoq serverlarining tirik statistikasi va eng boy/faol o'yinchilar reytingi.",
+      topRichest: "ENG BOY O'YINCHILAR TOP 3 TALIGI",
       topPlayers: "ENG KUCHLI O'YINCHILAR",
       kills: "O'ldirishlar",
       deaths: "O'limlar",
       playTime: "O'yin vaqti",
       noStats: "Hozircha statistika mavjud emas."
+    },
+    bans: {
+      badge: "SERVER JAZOLARI (BAN VA MUTE)",
+      title: "BANLAR, MUTELAR VA APELLATSIYALAR",
+      subtitle: "Noto'g'ri ban yoki mute olgan deb hisoblasangiz, apellyatsiya shaklini to'ldiring. Adminlar arizangizni tekshirib chiqishadi.",
+      tabBans: "BANLAR VA MUTELAR",
+      tabAnticheat: "ANTICHEAT",
+      submitAppeal: "APELLATSIYA BERISH",
+      dialogTitle: "BAN / MUTE APELLATSIYASI",
+      dialogDesc: "Noto'g'ri berilgan ban yoki mute bo'yicha ma'lumotlarni qoldiring.",
+      formNick: "MINECRAFT NIKINGIZ",
+      formReason: "JAZO SABABI (BAN/MUTE REASON)",
+      formAppealText: "APELLATSIYA MATNI (TUSHUNTIRISH)",
+      cancel: "BEKOR QILISH",
+      send: "YUBORISH",
+      noAppeals: "Hozircha apellyatsiyalar mavjud emas."
     },
     staff: {
       title: "LOVIHA JAMOSI",
@@ -175,13 +192,30 @@ export const dict = {
       noRules: "Правила пока не введены."
     },
     stats: {
-      title: "СТАТИСТИКА СЕРВЕРА",
-      subtitle: "Самые активные игроки и общая статистика сервера.",
+      title: "СТАТИСТИКА СЕРВЕРА И ТОПЫ",
+      subtitle: "Живая статистика серверов NeoTerra и рейтинг самых богатых/активных игроков.",
+      topRichest: "ТОП-3 САМЫХ БОГАТЫХ ИГРОКОВ",
       topPlayers: "ТОП ИГРОКОВ",
       kills: "Убийств",
       deaths: "Смертей",
       playTime: "Время игры",
       noStats: "Статистика пока недоступна."
+    },
+    bans: {
+      badge: "НАКАЗАНИЯ СЕРВЕРА (БАН И МУТ)",
+      title: "БАНЫ, МУТЫ И АПЕЛЛЯЦИИ",
+      subtitle: "Если вы считаете, что получили бан или мут ошибочно, заполните форму апелляции. Администраторы рассмотрят вашу заявку.",
+      tabBans: "БАНЫ И МУТЫ",
+      tabAnticheat: "АНТИЧИТ",
+      submitAppeal: "ПОДАТЬ АПЕЛЛЯЦИЮ",
+      dialogTitle: "АПЕЛЛЯЦИЯ БАНА / МУТА",
+      dialogDesc: "Оставьте информацию по ошибочному бану или муту.",
+      formNick: "ВАШ МИНЕКРАФТ НИК",
+      formReason: "ПРИЧИНА НАКАЗАНИЯ",
+      formAppealText: "ТЕКСТ АПЕЛЛЯЦИИ (ОПИСАНИЕ)",
+      cancel: "ОТМЕНА",
+      send: "ОТПРАВИТЬ",
+      noAppeals: "Апелляций пока нет."
     },
     staff: {
       title: "КОМАНДА ПРОЕКТА",
@@ -290,13 +324,30 @@ export const dict = {
       noRules: "No rules added yet."
     },
     stats: {
-      title: "SERVER STATISTICS",
-      subtitle: "Top active players and general server statistics.",
+      title: "SERVER STATS & LEADERBOARD",
+      subtitle: "Live statistics of NeoTerra servers and top player ranking.",
+      topRichest: "TOP 3 RICHEST PLAYERS",
       topPlayers: "TOP PLAYERS",
       kills: "Kills",
       deaths: "Deaths",
       playTime: "Play Time",
       noStats: "No statistics available yet."
+    },
+    bans: {
+      badge: "SERVER PENALTIES (BAN & MUTE)",
+      title: "BANS, MUTES & APPEALS",
+      subtitle: "If you believe you were banned or muted by mistake, submit an appeal form. Administrators will review your request.",
+      tabBans: "BANS & MUTES",
+      tabAnticheat: "ANTICHEAT",
+      submitAppeal: "SUBMIT APPEAL",
+      dialogTitle: "BAN / MUTE APPEAL",
+      dialogDesc: "Provide information regarding an incorrect ban or mute.",
+      formNick: "YOUR MINECRAFT NICKNAME",
+      formReason: "PENALTY REASON",
+      formAppealText: "APPEAL DETAILS (EXPLANATION)",
+      cancel: "CANCEL",
+      send: "SEND",
+      noAppeals: "No appeals submitted yet."
     },
     staff: {
       title: "PROJECT TEAM",

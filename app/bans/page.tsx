@@ -17,11 +17,13 @@ import {
 import { ShieldAlert, Gavel, FileText, Send, CheckCircle2, Clock, XCircle, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { getBanAppealsAction, submitBanAppealAction, BanAppeal } from "@/app/actions/bans";
+import { useTranslation } from "@/hooks/use-translation";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 
 export default function BansPage() {
   const { uid, minecraftUsername } = useAuth();
+  const { t } = useTranslation();
   const [appeals, setAppeals] = useState<BanAppeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -73,7 +75,7 @@ export default function BansPage() {
               className="px-6 py-2.5 rounded-xl text-xs font-black transition-all bg-red-600 text-white shadow-lg shadow-red-600/30 flex items-center gap-2 uppercase tracking-wider"
             >
               <Gavel className="size-4" />
-              BANLAR VA MUTELAR
+              {t("bans", "tabBans")}
             </Link>
 
             <Link
@@ -81,39 +83,39 @@ export default function BansPage() {
               className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
             >
               <ShieldAlert className="size-4" />
-              ANTICHEAT
+              {t("bans", "tabAnticheat")}
             </Link>
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-widest mb-2">
-              <Gavel className="h-4 w-4" /> SERVER JAZOLARI (BAN VA MUTE)
+              <Gavel className="h-4 w-4" /> {t("bans", "badge")}
             </div>
             <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter liquid-shadow">
-              BANLAR, MUTELAR VA <span className="text-red-500">APELLATSIYALAR</span>
+              {t("bans", "title")}
             </h1>
             <p className="text-zinc-400 text-sm max-w-xl mt-1">
-              Noto&apos;g&apos;ri ban yoki mute olgan deb hisoblasangiz, apellyatsiya shaklini to&apos;ldiring. Adminlar arizangizni tekshirib chiqishadi.
+              {t("bans", "subtitle")}
             </p>
           </div>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-red-600 hover:bg-red-700 font-black tracking-wider uppercase italic h-12 px-6 rounded-2xl gap-2 shadow-lg shadow-red-950/50">
-                <FileText className="h-4 w-4" /> Ban Apellyatsiyasi Yuborish
+                <FileText className="h-4 w-4" /> {t("bans", "submitAppeal")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px] border-white/10 bg-zinc-950/95 backdrop-blur-2xl rounded-[2.5rem] text-white">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-black text-white uppercase italic flex items-center gap-2">
-                  <ShieldAlert className="h-6 w-6 text-red-500" /> UNBAN ARIZASI YUBORISH
+                  <ShieldAlert className="h-6 w-6 text-red-500" /> {t("bans", "dialogTitle")}
                 </DialogTitle>
               </DialogHeader>
 
               <form onSubmit={handleSubmitAppeal} className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Minecraft Nikingiz</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{t("bans", "formNick")}</Label>
                   <Input
                     name="username"
                     defaultValue={minecraftUsername || ""}
@@ -124,7 +126,7 @@ export default function BansPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Ban Sababi (Aktiv jazodagi sabab)</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{t("bans", "formReason")}</Label>
                   <Input
                     name="reason"
                     placeholder="Masalan: Cheating / GrimAC / AutoClicker"
@@ -133,10 +135,10 @@ export default function BansPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Nega Unban Berishimiz Kerak? (Tushuntirish)</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{t("bans", "formAppealText")}</Label>
                   <Textarea
                     name="appealText"
-                    placeholder="Batafsil tushuntiring..."
+                    placeholder="..."
                     required
                     rows={4}
                     className="border-white/10 bg-white/5 rounded-2xl text-white font-medium p-3"
@@ -144,7 +146,7 @@ export default function BansPage() {
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-red-600 hover:bg-red-700 font-black tracking-widest italic rounded-2xl gap-2">
-                  <Send className="h-4 w-4" /> {isSubmitting ? "YUBORILMOQDA..." : "ARIZANI YUBORISH"}
+                  <Send className="h-4 w-4" /> {isSubmitting ? "..." : t("bans", "send")}
                 </Button>
               </form>
             </DialogContent>
