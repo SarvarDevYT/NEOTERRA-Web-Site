@@ -21,9 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Plus, RefreshCw, Edit2, Dices, Gift } from "lucide-react";
+import { Trash2, Plus, RefreshCw, Edit2, Dices, Gift, User, Send } from "lucide-react";
 import { toast } from "sonner";
-import { getWheelRewardsAction, updateWheelRewardAction, deleteWheelRewardAction, WheelReward } from "@/app/actions/wheel";
+import { 
+  getWheelRewardsAction, 
+  updateWheelRewardAction, 
+  deleteWheelRewardAction, 
+  grantWheelSpinByUsernameAdminAction,
+  WheelReward 
+} from "@/app/actions/wheel";
 
 export default function AdminWheelPage() {
   const [rewards, setRewards] = useState<WheelReward[]>([]);
@@ -31,6 +37,11 @@ export default function AdminWheelPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingReward, setEditingReward] = useState<WheelReward | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Grant Spin State
+  const [userInput, setUserInput] = useState("");
+  const [spinCount, setSpinCount] = useState("1");
+  const [isGranting, setIsGranting] = useState(false);
 
   useEffect(() => {
     fetchRewards();
@@ -82,6 +93,23 @@ export default function AdminWheelPage() {
     }
   }
 
+  async function handleGrantSpins(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userInput.trim()) return;
+    const count = Math.max(1, parseInt(spinCount) || 1);
+
+    setIsGranting(true);
+    const res = await grantWheelSpinByUsernameAdminAction(userInput, count);
+    if (res.success) {
+      toast.success(res.message);
+      setUserInput("");
+      setSpinCount("1");
+    } else {
+      toast.error(res.message);
+    }
+    setIsGranting(false);
+  }
+
   const openCreateModal = () => {
     setEditingReward(null);
     setIsDialogOpen(true);
@@ -118,6 +146,58 @@ export default function AdminWheelPage() {
           </Button>
         </div>
       </div>
+
+      {/* Grant Wheel Spins Card */}
+      <Card className="border-purple-500/30 bg-purple-500/10 rounded-2xl p-5 text-white">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center border border-purple-500/40">
+              <Dices className="h-5 w-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black uppercase italic tracking-tight text-purple-300">
+                🎰 Foydalanuvchiga Omad G'ildiragi Berish
+              </h3>
+              <p className="text-xs text-zinc-400">O'yinchining niki yoki emaili bo'yicha g'ildirak aylantirish imkoniyatini taqdim eting.</p>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleGrantSpins} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div className="sm:col-span-6">
+            <Input
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Minecraft nik yoki Email kiriting (masalan: Steve)"
+              required
+              className="border-white/10 bg-black/40 h-12 rounded-xl text-white font-bold placeholder:text-zinc-500"
+            />
+          </div>
+
+          <div className="sm:col-span-3">
+            <Input
+              type="number"
+              min="1"
+              max="100"
+              value={spinCount}
+              onChange={(e) => setSpinCount(e.target.value)}
+              placeholder="Soni (masalan: 1)"
+              required
+              className="border-white/10 bg-black/40 h-12 rounded-xl text-white font-bold"
+            />
+          </div>
+
+          <div className="sm:col-span-3">
+            <Button
+              type="submit"
+              disabled={isGranting || !userInput.trim()}
+              className="w-full h-12 bg-purple-600 hover:bg-purple-700 font-bold rounded-xl gap-2 shadow-lg shadow-purple-600/30"
+            >
+              <Send className="h-4 w-4" /> {isGranting ? "BERILMOQDA..." : "IMKONIYAT BERISH"}
+            </Button>
+          </div>
+        </form>
+      </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[500px] border-white/10 bg-zinc-950/90 backdrop-blur-2xl rounded-[2.5rem] text-white">

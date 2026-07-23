@@ -13,10 +13,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Users, Search, Wallet, Shield, Send, RefreshCw, Gamepad2, SendHorizontal, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Users, Search, Wallet, Shield, Send, RefreshCw, Gamepad2, SendHorizontal, ShieldAlert, ShieldCheck, Dices } from "lucide-react";
 import { toast } from "sonner";
 import { getAllUsersAdminAction, updateUserBalanceAdminAction, updateUserRoleAdminAction } from "@/app/actions/player-profile";
 import { syncPendingInpayPaymentsAction } from "@/app/actions/inpay";
+import { grantWheelSpinAdminAction } from "@/app/actions/wheel";
 
 interface UserItem {
   uid: string;
@@ -34,6 +35,8 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isBalanceDialogOpen, setIsBalanceDialogOpen] = useState(false);
+  const [isSpinDialogOpen, setIsSpinDialogOpen] = useState(false);
+  const [spinCountInput, setSpinCountInput] = useState("1");
   const [amountInput, setAmountInput] = useState("");
   const [mode, setMode] = useState<"add" | "set">("add");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,6 +94,24 @@ export default function AdminUsersPage() {
       toast.success(`Balans ${mode === "add" ? "qo'shildi" : "o'zgartirildi"}!`);
       setIsBalanceDialogOpen(false);
       setAmountInput("");
+      fetchUsers();
+    } else {
+      toast.error(res.message);
+    }
+    setIsSubmitting(false);
+  }
+
+  async function handleGrantSpinSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedUser) return;
+    const count = Math.max(1, parseInt(spinCountInput) || 1);
+
+    setIsSubmitting(true);
+    const res = await grantWheelSpinAdminAction(selectedUser.uid, count);
+    if (res.success) {
+      toast.success(res.message);
+      setIsSpinDialogOpen(false);
+      setSpinCountInput("1");
       fetchUsers();
     } else {
       toast.error(res.message);
@@ -221,6 +242,16 @@ export default function AdminUsersPage() {
                   <Button
                     onClick={() => {
                       setSelectedUser(user);
+                      setIsSpinDialogOpen(true);
+                    }}
+                    variant="outline"
+                    className="border-purple-500/30 text-purple-300 hover:bg-purple-600 hover:text-white font-bold gap-2 rounded-xl text-xs"
+                  >
+                    <Dices className="h-4 w-4" /> G'ildirak Berish
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setSelectedUser(user);
                       setIsBalanceDialogOpen(true);
                     }}
                     className="bg-purple-600 hover:bg-purple-700 text-white font-bold gap-2 rounded-xl text-xs"
@@ -285,6 +316,44 @@ export default function AdminUsersPage() {
             <DialogFooter className="pt-2">
               <Button type="submit" disabled={isSubmitting} className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-2xl">
                 {isSubmitting ? "SAQLANMOQDA..." : "BALANSGA YOZISH"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Grant Wheel Spins Dialog */}
+      <Dialog open={isSpinDialogOpen} onOpenChange={setIsSpinDialogOpen}>
+        <DialogContent className="sm:max-w-[420px] border-white/10 bg-zinc-950/90 backdrop-blur-2xl rounded-[2.5rem] text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white uppercase italic flex items-center gap-2">
+              <Dices className="h-6 w-6 text-purple-400" /> OMAD G'ILDIRAGI BERISH
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400 font-medium">
+              Foydalanuvchi: <span className="text-white font-bold">{selectedUser?.email}</span> ({selectedUser?.minecraftUsername || "Nik yo'q"})
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleGrantSpinSubmit} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+                Aylantirishlar Soni
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                max="100"
+                value={spinCountInput}
+                onChange={(e) => setSpinCountInput(e.target.value)}
+                placeholder="Masalan: 1"
+                required
+                className="border-white/10 h-12 bg-white/5 rounded-2xl text-white font-bold text-lg"
+              />
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button type="submit" disabled={isSubmitting} className="w-full h-12 bg-purple-600 hover:bg-purple-700 font-bold rounded-2xl">
+                {isSubmitting ? "BERILMOQDA..." : "IMKONIYAT QO'SHISH"}
               </Button>
             </DialogFooter>
           </form>

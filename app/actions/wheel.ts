@@ -97,50 +97,71 @@ export async function spinWheelAction(userUid: string) {
       }
     }
 
-    // 24 hour cooldown check
-    const lastSpin = userData.lastWheelSpin?.toDate?.()?.getTime() || 0
-    const now = Date.now()
-    const cooldownMs = 24 * 60 * 60 * 1000 // 24 hours
+    // Extra spins & 24 hour cooldown check
+    const extraSpins = userData.extraWheelSpins || 0;
+    const lastSpin = userData.lastWheelSpin?.toDate?.()?.getTime() || 0;
+    const now = Date.now();
+    const cooldownMs = 24 * 60 * 60 * 1000; // 24 hours
 
-    if (now - lastSpin < cooldownMs) {
-      const remainingMs = cooldownMs - (now - lastSpin)
-      const hours = Math.floor(remainingMs / (1000 * 60 * 60))
-      const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60))
+    const hasExtraSpin = extraSpins > 0;
+    const cooldownOver = now - lastSpin >= cooldownMs;
+
+    if (!hasExtraSpin && !cooldownOver) {
+      const remainingMs = cooldownMs - (now - lastSpin);
+      const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+      const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
       return { 
         success: false, 
         message: `Keyingi imkoniyatga ${hours} soat ${minutes} daqiqa qoldi!` 
-      }
+      };
     }
 
-    const rewards = await getWheelRewardsAction()
+    const rewards = await getWheelRewardsAction();
     if (rewards.length === 0) {
-      return { success: false, message: "G'ildirak sovg'alari sozlanmagan!" }
+      return { success: false, message: "G'ildirak sovg'alari sozlanmagan!" };
     }
 
     // Weighted random selection
-    const totalWeight = rewards.reduce((acc, r) => acc + (r.chance || 1), 0)
-    let randomNum = Math.random() * totalWeight
-    let winningReward = rewards[0]
+    const totalWeight = rewards.reduce((acc, r) => acc + (r.chance || 1), 0);
+    let randomNum = Math.random() * totalWeight;
+    let winningReward = rewards[0];
 
     for (const reward of rewards) {
       if (randomNum < (reward.chance || 1)) {
-        winningReward = reward
-        break
+        winningReward = reward;
+        break;
       }
-      randomNum -= (reward.chance || 1)
+      randomNum -= (reward.chance || 1);
     }
 
-    // Grant reward
+    // Prepare user update data
+    const userUpdateData: any = {};
+    if (hasExtraSpin) {
+      userUpdateData.extraWheelSpins = FieldValue.increment(-1);
+    } else {
+      userUpdateData.lastWheelSpin = FieldValue.serverTimestamp();
+    }
+
+    // Grant reward & Record in payments history
     if (winningReward.type === "balance") {
-      const amount = Number(winningReward.value) || 0
+      const amount = Number(winningReward.value) || 0;
       if (amount > 0) {
-        await userRef.update({
-          balance: FieldValue.increment(amount),
-          lastWheelSpin: FieldValue.serverTimestamp(),
-        })
+        userUpdateData.balance = FieldValue.increment(amount);
+
+        // Record in user's payments transaction history
+        await adminDb.collection("payments").add({
+          userUid: userUid,
+          username: minecraftUsername,
+          amount: amount,
+          productName: `🎰 Omad G'ildiragi Sovg'asi: ${winningReward.name}`,
+          provider: "omad_gildiragi",
+          status: "completed",
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
       }
     } else if (winningReward.type === "command") {
-      const cmdToRun = winningReward.value.replace(/\{username\}/gi, minecraftUsername)
+      const cmdToRun = winningReward.value.replace(/\{username\}/gi, minecraftUsername);
       await adminDb.collection("commands_queue").add({
         command: cmdToRun,
         username: minecraftUsername,
@@ -149,16 +170,22 @@ export async function spinWheelAction(userUid: string) {
         serverId: "",
         status: "pending",
         createdAt: FieldValue.serverTimestamp(),
-      })
-      await userRef.update({
-        lastWheelSpin: FieldValue.serverTimestamp(),
-      })
-    } else {
-      // Nothing / No prize
-      await userRef.update({
-        lastWheelSpin: FieldValue.serverTimestamp(),
-      })
+      });
+
+      // Record non-balance prize in payment history as well
+      await adminDb.collection("payments").add({
+        userUid: userUid,
+        username: minecraftUsername,
+        amount: 0,
+        productName: `🎰 Omad G'ildiragi Sovg'asi: ${winningReward.name}`,
+        provider: "omad_gildiragi",
+        status: "completed",
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
     }
+
+    await userRef.update(userUpdateData);
 
     // Save history record
     await adminDb.collection("wheel_history").add({
@@ -167,7 +194,7 @@ export async function spinWheelAction(userUid: string) {
       rewardId: winningReward.id,
       rewardName: winningReward.name,
       createdAt: FieldValue.serverTimestamp(),
-    })
+    });
 
     // Send Telegram Notification to staff if winning rare reward (chance <= 10%)
     if (winningReward.chance <= 10 && winningReward.type !== "nothing") {
@@ -176,19 +203,95 @@ export async function spinWheelAction(userUid: string) {
         `👤 <b>O'yinchi:</b> <code>${minecraftUsername}</code>\n` +
         `🎁 <b>Yutgan sovg'asi:</b> <code>${winningReward.name}</code>\n` +
         `🎲 <b>Ehtimolligi:</b> ${winningReward.chance}%`
-      ).catch(() => {})
+      ).catch(() => {});
     }
 
-    revalidatePath("/wheel")
-    revalidatePath("/settings")
+    revalidatePath("/wheel");
+    revalidatePath("/settings");
 
     return {
       success: true,
       reward: winningReward,
       rewardIndex: rewards.findIndex(r => r.id === winningReward.id)
-    }
+    };
   } catch (error: any) {
-    console.error("spinWheelAction error:", error)
-    return { success: false, message: error.message || "Xatolik yuz berdi" }
+    console.error("spinWheelAction error:", error);
+    return { success: false, message: error.message || "Xatolik yuz berdi" };
+  }
+}
+
+export async function grantWheelSpinAdminAction(userUid: string, count: number = 1) {
+  if (!adminDb) return { success: false, message: "Firebase Admin sozlanmagan!" };
+  if (!userUid) return { success: false, message: "User ID kiritilmadi!" };
+
+  try {
+    const userRef = adminDb.collection("users").doc(userUid);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      return { success: false, message: "Foydalanuvchi topilmadi!" };
+    }
+
+    await userRef.update({
+      extraWheelSpins: FieldValue.increment(count),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    const userData = userDoc.data();
+    const username = userData?.minecraftUsername || userData?.email || userUid;
+
+    revalidatePath("/admin/dashboard/users");
+    revalidatePath("/admin/dashboard/wheel");
+    revalidatePath("/wheel");
+
+    return { 
+      success: true, 
+      message: `"${username}" ga ${count} ta omad g'ildiragi aylantirish imkoniyati berildi!` 
+    };
+  } catch (error: any) {
+    console.error("grantWheelSpinAdminAction error:", error);
+    return { success: false, message: error.message || "Xatolik yuz berdi" };
+  }
+}
+
+export async function grantWheelSpinByUsernameAdminAction(identifier: string, count: number = 1) {
+  if (!adminDb) return { success: false, message: "Firebase Admin sozlanmagan!" };
+  const queryStr = identifier.trim();
+  if (!queryStr) return { success: false, message: "Foydalanuvchi nik yoki emaili kiritilmadi!" };
+
+  try {
+    let userDoc: any = null;
+
+    // Try finding by minecraftUsername
+    const nickSnap = await adminDb.collection("users").where("minecraftUsername", "==", queryStr).limit(1).get();
+    if (!nickSnap.empty) {
+      userDoc = nickSnap.docs[0];
+    } else {
+      // Try finding by email
+      const emailSnap = await adminDb.collection("users").where("email", "==", queryStr).limit(1).get();
+      if (!emailSnap.empty) {
+        userDoc = emailSnap.docs[0];
+      }
+    }
+
+    if (!userDoc) {
+      return { success: false, message: `"${queryStr}" foydalanuvchisi topilmadi!` };
+    }
+
+    await userDoc.ref.update({
+      extraWheelSpins: FieldValue.increment(count),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    revalidatePath("/admin/dashboard/users");
+    revalidatePath("/admin/dashboard/wheel");
+    revalidatePath("/wheel");
+
+    return { 
+      success: true, 
+      message: `"${queryStr}" ga ${count} ta omad g'ildiragi aylantirish imkoniyati berildi!` 
+    };
+  } catch (error: any) {
+    console.error("grantWheelSpinByUsernameAdminAction error:", error);
+    return { success: false, message: error.message || "Xatolik yuz berdi" };
   }
 }
