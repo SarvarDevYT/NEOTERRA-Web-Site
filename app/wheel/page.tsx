@@ -38,6 +38,10 @@ export default function WheelPage() {
       return;
     }
     if (isSpinning) return;
+    if (rewards.length === 0) {
+      toast.error("G'ildirak mukofotlari mavjud emas!");
+      return;
+    }
 
     setIsSpinning(true);
     setWonReward(null);
@@ -50,13 +54,20 @@ export default function WheelPage() {
       return;
     }
 
-    const reward = res.reward!;
-    const rewardIndex = res.rewardIndex ?? 0;
-    const sliceAngle = 360 / rewards.length;
+    const winIdx = res.rewardIndex !== undefined && res.rewardIndex >= 0 ? res.rewardIndex : 0;
+    const reward = res.reward || rewards[winIdx];
 
-    // Calculate rotation: 5 full spins (1800 deg) + offset to winning slice
-    const targetSliceAngle = 360 - (rewardIndex * sliceAngle) - (sliceAngle / 2);
-    const totalRotation = rotationDegree + 1800 + targetSliceAngle;
+    // Trigonometric rotation computation
+    const numSlices = rewards.length;
+    const sliceAngle = 360 / numSlices;
+    
+    // Slice winIdx center is at: winIdx * sliceAngle + sliceAngle / 2
+    const targetSliceCenter = winIdx * sliceAngle + sliceAngle / 2;
+    const rotationDelta = (360 - targetSliceCenter) % 360;
+
+    // 5 full rotations (1800 deg) + exact offset
+    const currentModulo = rotationDegree % 360;
+    const totalRotation = rotationDegree + 1800 + ((rotationDelta - currentModulo + 360) % 360);
 
     setRotationDegree(totalRotation);
 
@@ -71,16 +82,13 @@ export default function WheelPage() {
     }, 4500);
   }
 
-  const numSlices = rewards.length || 6;
-  const sliceAngle = 360 / numSlices;
-
   return (
     <div className="min-h-screen pt-24 pb-16 bg-black text-white relative overflow-hidden flex flex-col items-center justify-center">
       {/* Background Gradients */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/15 blur-[140px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 left-1/3 w-[400px] h-[400px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="container max-w-4xl mx-auto px-4 text-center relative z-10 space-y-8">
+      <div className="container max-w-4xl mx-auto px-4 text-center relative z-10 space-y-6">
         <div>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-black uppercase tracking-widest mb-3">
             <Sparkles className="h-4 w-4" /> KUNLIK BEPUL OMAD G'ILDIRAGI
@@ -113,45 +121,83 @@ export default function WheelPage() {
           </Card>
         ) : null}
 
-        {/* Wheel Graphic Container */}
-        <div className="relative w-[320px] h-[320px] md:w-[420px] md:h-[420px] mx-auto my-6 flex items-center justify-center select-none">
-          {/* Wheel Pointer Arrow */}
+        {/* SVG Wheel Graphic Container */}
+        <div className="relative w-[340px] h-[340px] md:w-[440px] md:h-[440px] mx-auto my-4 flex items-center justify-center select-none">
+          {/* Top Pointer Arrow */}
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 w-8 h-10 flex flex-col items-center">
-            <div className="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[28px] border-t-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
+            <div className="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[28px] border-t-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)]" />
           </div>
 
-          {/* Rotating Wheel Circle */}
-          <div
-            className="w-full h-full rounded-full border-4 border-purple-500/40 shadow-[0_0_80px_-10px_rgba(168,85,247,0.5)] overflow-hidden relative"
-            style={{
-              transform: `rotate(${rotationDegree}deg)`,
-              transition: isSpinning ? "transform 4.5s cubic-bezier(0.15, 0.90, 0.20, 1.00)" : "none",
-            }}
-          >
-            {rewards.map((reward, i) => {
-              const rotate = i * sliceAngle;
-              return (
-                <div
-                  key={reward.id}
-                  className="absolute w-1/2 h-1/2 top-0 right-0 origin-bottom-left flex items-center justify-center"
-                  style={{
-                    transform: `rotate(${rotate}deg) skewY(-${90 - sliceAngle}deg)`,
-                    backgroundColor: reward.color || "#a855f7",
-                  }}
-                >
-                  <div
-                    className="flex flex-col items-center justify-center text-white font-black text-xs md:text-sm tracking-wider"
-                    style={{
-                      transform: `skewY(${90 - sliceAngle}deg) rotate(${sliceAngle / 2}deg) translate(50px, -40px)`,
-                    }}
-                  >
-                    <span className="text-xl md:text-2xl drop-shadow">{reward.icon}</span>
-                    <span className="truncate max-w-[90px] drop-shadow">{reward.name}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* SVG Wheel Circle */}
+          <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-[0_0_60px_rgba(168,85,247,0.4)]">
+            <g
+              style={{
+                transform: `rotate(${rotationDegree}deg)`,
+                transformOrigin: "200px 200px",
+                transition: isSpinning ? "transform 4.5s cubic-bezier(0.15, 0.90, 0.20, 1.00)" : "none",
+              }}
+            >
+              {rewards.map((reward, i) => {
+                const numSlices = rewards.length || 6;
+                const sliceAngle = 360 / numSlices;
+                const startAngle = i * sliceAngle - 90;
+                const endAngle = (i + 1) * sliceAngle - 90;
+                const radStart = (startAngle * Math.PI) / 180;
+                const radEnd = (endAngle * Math.PI) / 180;
+
+                const x1 = 200 + 190 * Math.cos(radStart);
+                const y1 = 200 + 190 * Math.sin(radStart);
+                const x2 = 200 + 190 * Math.cos(radEnd);
+                const y2 = 200 + 190 * Math.sin(radEnd);
+
+                const pathData = `M 200 200 L ${x1} ${y1} A 190 190 0 0 1 ${x2} ${y2} Z`;
+
+                const midAngle = (startAngle + endAngle) / 2;
+                const radMid = (midAngle * Math.PI) / 180;
+                const labelX = 200 + 125 * Math.cos(radMid);
+                const labelY = 200 + 125 * Math.sin(radMid);
+
+                return (
+                  <g key={reward.id || i}>
+                    <path
+                      d={pathData}
+                      fill={reward.color || "#a855f7"}
+                      stroke="#000000"
+                      strokeWidth="2.5"
+                    />
+                    <g transform={`translate(${labelX}, ${labelY}) rotate(${midAngle + 90})`}>
+                      <text
+                        y="-6"
+                        textAnchor="middle"
+                        fontSize="22"
+                        className="select-none"
+                        style={{ userSelect: "none" }}
+                      >
+                        {reward.icon || "🎁"}
+                      </text>
+                      <text
+                        y="14"
+                        textAnchor="middle"
+                        fontSize="11"
+                        fontWeight="900"
+                        fill="#ffffff"
+                        className="select-none font-sans uppercase tracking-tight"
+                        style={{
+                          userSelect: "none",
+                          textShadow: "0 2px 4px rgba(0,0,0,0.8)"
+                        }}
+                      >
+                        {reward.name}
+                      </text>
+                    </g>
+                  </g>
+                );
+              })}
+            </g>
+
+            {/* Outer Border Ring */}
+            <circle cx="200" cy="200" r="192" fill="none" stroke="#a855f7" strokeWidth="6" opacity="0.6" />
+          </svg>
 
           {/* Center Button / Hub */}
           <div className="absolute z-20 w-20 h-20 md:w-24 md:h-24 bg-zinc-950 border-4 border-purple-500 rounded-full flex items-center justify-center shadow-2xl shadow-purple-500/50">
@@ -161,7 +207,7 @@ export default function WheelPage() {
               className="w-full h-full rounded-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs md:text-sm uppercase italic tracking-tighter flex flex-col items-center justify-center p-0 transition-transform active:scale-90"
             >
               {isSpinning ? (
-                <span className="animate-pulse">AYLANMOQDA...</span>
+                <span className="animate-pulse text-[10px]">AYLANMOQDA</span>
               ) : (
                 <>
                   <Dices className="h-6 w-6 mb-0.5" />
@@ -174,10 +220,12 @@ export default function WheelPage() {
 
         {/* Won Prize Display Modal/Card */}
         {wonReward && (
-          <Card className="border-emerald-500/30 bg-emerald-500/10 max-w-md mx-auto rounded-3xl p-6 text-center animate-bounce">
-            <div className="text-4xl mb-2">{wonReward.icon}</div>
-            <h3 className="text-emerald-400 font-black text-2xl uppercase italic">TABRIKLAYMIZ!</h3>
-            <p className="text-white font-bold text-lg mt-1">&quot;{wonReward.name}&quot; mukofotini qo&apos;lga kiritdingiz!</p>
+          <Card className="border-emerald-500/40 bg-emerald-500/10 max-w-md mx-auto rounded-3xl p-6 text-center animate-in zoom-in-95">
+            <div className="text-4xl mb-2">{wonReward.icon || "🎉"}</div>
+            <h3 className="text-emerald-400 font-black text-xl italic uppercase">TABRIKLAYMIZ!</h3>
+            <p className="text-white font-bold text-lg mt-1">
+              &quot;{wonReward.name}&quot; mukofotini qo&apos;lga kiritdingiz!
+            </p>
           </Card>
         )}
       </div>

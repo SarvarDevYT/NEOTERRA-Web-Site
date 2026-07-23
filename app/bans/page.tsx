@@ -14,9 +14,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ShieldAlert, Gavel, FileText, Send, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { ShieldAlert, Gavel, FileText, Send, CheckCircle2, Clock, XCircle, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { getBanAppealsAction, submitBanAppealAction, BanAppeal } from "@/app/actions/bans";
+import Link from "next/link";
 
 export default function BansPage() {
   const { uid, minecraftUsername } = useAuth();
@@ -62,6 +63,34 @@ export default function BansPage() {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-red-600/10 blur-[140px] rounded-full pointer-events-none" />
 
       <div className="container max-w-5xl mx-auto px-4 relative z-10 space-y-8">
+        {/* Sub Navigation (Bans | Anticheat | Mutelar) */}
+        <div className="flex justify-center mb-6">
+          <div className="flex items-center gap-2 p-1.5 bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
+            <Link
+              href="/bans"
+              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all bg-red-600 text-white shadow-lg shadow-red-600/30 flex items-center gap-2 uppercase tracking-wider"
+            >
+              <Gavel className="size-4" />
+              BANLAR VA APELLATSIYA
+            </Link>
+
+            <Link
+              href="/anticheat"
+              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
+            >
+              <ShieldAlert className="size-4" />
+              ANTICHEAT
+            </Link>
+
+            <Link
+              href="/bans"
+              className="px-6 py-2.5 rounded-xl text-xs font-black transition-all text-white/50 hover:text-white hover:bg-white/5 flex items-center gap-2 uppercase tracking-wider"
+            >
+              <MessageSquare className="size-4" />
+              MUTELAR
+            </Link>
+          </div>
+        </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-widest mb-2">
