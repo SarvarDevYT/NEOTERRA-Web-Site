@@ -10,7 +10,12 @@ import {
   linkWithPopup, 
   GoogleAuthProvider, 
   onAuthStateChanged,
-  signOut as firebaseSignOut
+  signOut as firebaseSignOut,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  linkWithCredential,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth as firebaseClientAuth } from "@/lib/firebase";
 import { updateMinecraftUsername, getUserProfile } from "@/app/actions/player-profile";
@@ -18,7 +23,7 @@ import { createInpayPaymentAction, getUserPaymentsAction } from "@/app/actions/i
 import { verifyLinkCode, kickPlayer, tempBanPlayer } from "@/app/actions/player-link";
 import { unlinkTelegramAction, unlinkMinecraftAction } from "@/app/actions/player-profile";
 import { getSystemSettingsAction } from "@/app/actions/system-settings";
-import { Shield, Key, Mail, User, LogOut, Check, CreditCard, Gamepad2, Ban, DoorOpen, Send, Unlink, HelpCircle, History, FileText, ExternalLink, RefreshCw } from "lucide-react";
+import { Shield, Key, Mail, User, LogOut, Check, CreditCard, Gamepad2, Ban, DoorOpen, Send, Unlink, HelpCircle, History, FileText, ExternalLink, RefreshCw, Lock, Eye, EyeOff, KeyRound, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/footer";
 import { useTranslation } from "@/hooks/use-translation";
@@ -49,6 +54,159 @@ export default function SettingsPage() {
   const [isPaymentsLoading, setIsPaymentsLoading] = useState(false);
   const [inpayEnabled, setInpayEnabled] = useState(true);
   const [inpayNotice, setInpayNotice] = useState("");
+
+  // Password Management States
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
+
+  const hasPasswordProvider = userAuth?.providerData?.some(
+    (p: any) => p.providerId === "password"
+  );
+
+  // Function to set password for Google users
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPasswordInput || newPasswordInput.length < 6) {
+      toast({
+        title: lang === "uz" ? "Xatolik" : "Error",
+        description: lang === "uz" ? "Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak." : "New password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (newPasswordInput !== confirmPasswordInput) {
+      toast({
+        title: lang === "uz" ? "Xatolik" : "Error",
+        description: lang === "uz" ? "Parollar bir-biriga mos kelmadi." : "Passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPasswordLoading(true);
+    try {
+      const currentUser = firebaseClientAuth.currentUser;
+      if (!currentUser || !currentUser.email) throw new Error("Foydalanuvchi topilmadi");
+
+      const credential = EmailAuthProvider.credential(currentUser.email, newPasswordInput);
+      try {
+        await linkWithCredential(currentUser, credential);
+      } catch (linkErr: any) {
+        await updatePassword(currentUser, newPasswordInput);
+      }
+
+      await currentUser.reload();
+      setUserAuth({ ...firebaseClientAuth.currentUser });
+      toast({
+        title: lang === "uz" ? "Muvaffaqiyatli! 🎉" : "Success!",
+        description: lang === "uz" 
+          ? "Profilingizga parol muvaffaqiyatli o'rnatildi! Endi email va ushbu parol orqali ham kirsangiz bo'ladi." 
+          : "Password set successfully! You can now log in with email & password.",
+      });
+      setNewPasswordInput("");
+      setConfirmPasswordInput("");
+    } catch (err: any) {
+      console.error("Set password error:", err);
+      toast({
+        title: lang === "uz" ? "Xatolik!" : "Error!",
+        description: err.message || "Parol o'rnatishda xatolik yuz berdi.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
+  // Function to change password for users who already have password
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPasswordInput) {
+      toast({
+        title: lang === "uz" ? "Xatolik" : "Error",
+        description: lang === "uz" ? "Eski parolingizni kiriting." : "Please enter your current password.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!newPasswordInput || newPasswordInput.length < 6) {
+      toast({
+        title: lang === "uz" ? "Xatolik" : "Error",
+        description: lang === "uz" ? "Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak." : "New password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (newPasswordInput !== confirmPasswordInput) {
+      toast({
+        title: lang === "uz" ? "Xatolik" : "Error",
+        description: lang === "uz" ? "Yangi parollar bir-biriga mos kelmadi." : "Passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPasswordLoading(true);
+    try {
+      const currentUser = firebaseClientAuth.currentUser;
+      if (!currentUser || !currentUser.email) throw new Error("Foydalanuvchi topilmadi");
+
+      // Re-authenticate with current password
+      const cred = EmailAuthProvider.credential(currentUser.email, currentPasswordInput);
+      await reauthenticateWithCredential(currentUser, cred);
+
+      // Update password
+      await updatePassword(currentUser, newPasswordInput);
+
+      toast({
+        title: lang === "uz" ? "Muvaffaqiyatli! 🎉" : "Success!",
+        description: lang === "uz" ? "Parolingiz muvaffaqiyatli almashtirildi!" : "Password changed successfully!",
+      });
+      setCurrentPasswordInput("");
+      setNewPasswordInput("");
+      setConfirmPasswordInput("");
+    } catch (err: any) {
+      console.error("Change password error:", err);
+      let msg = err.message || "Parolni almashtirishda xatolik yuz berdi.";
+      if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+        msg = lang === "uz" ? "Eski parolingiz noto'g'ri kiritildi!" : "Current password is incorrect!";
+      }
+      toast({
+        title: lang === "uz" ? "Xatolik!" : "Error!",
+        description: msg,
+        variant: "destructive",
+      });
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    if (!email) return;
+    setIsSendingResetEmail(true);
+    try {
+      await sendPasswordResetEmail(firebaseClientAuth, email);
+      toast({
+        title: lang === "uz" ? "Xabar Yuborildi! 📧" : "Email Sent!",
+        description: lang === "uz" 
+          ? `Parolni tiklash xabari ${email} pochtasiga yuborildi! Gmailingizni tekshiring.` 
+          : `Password reset link sent to ${email}!`,
+      });
+    } catch (err: any) {
+      toast({
+        title: lang === "uz" ? "Xatolik!" : "Error!",
+        description: err.message || "Xabar yuborishda xato.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingResetEmail(false);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -346,6 +504,191 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
+            </Card>
+
+            {/* 2. PAROL XAVFSIZLIGI CARD */}
+            <Card className="border-white/10 bg-white/5 backdrop-blur-md rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-7 shadow-xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
+              <CardHeader className="p-0 mb-5">
+                <CardTitle className="text-lg sm:text-xl font-black uppercase italic tracking-tight text-white flex items-center gap-2">
+                  <KeyRound className="h-5 w-5 text-purple-400 shrink-0" />
+                  {!hasPasswordProvider 
+                    ? (lang === "uz" ? "Profilga Parol O'rnating" : "Set Profile Password") 
+                    : (lang === "uz" ? "Parolni Almashtirish" : "Change Password")}
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-zinc-400 font-medium mt-1">
+                  {!hasPasswordProvider
+                    ? (lang === "uz"
+                        ? "Siz Google orqali ro'yxatdan o'tgansiz. Tizimga email va parol bilan ham kirish imkoniyatiga ega bo'lish uchun profilga parol o'rnating."
+                        : "Set a password for your account to log in with email and password.")
+                    : (lang === "uz"
+                        ? "Profil xavfsizligini ta'minlash uchun parolingizni muntazam almashtirib turing."
+                        : "Update your password regularly to keep your account secure.")}
+                </CardDescription>
+              </CardHeader>
+
+              {!hasPasswordProvider ? (
+                /* FORM TO SET PASSWORD FOR GOOGLE USER */
+                <form onSubmit={handleSetPassword} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                      <Lock className="size-3" /> {lang === "uz" ? "Yangi Parol" : "New Password"}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={newPasswordInput}
+                        onChange={(e) => setNewPasswordInput(e.target.value)}
+                        className="border-white/10 focus-visible:ring-purple-500 h-11 sm:h-12 bg-white/5 rounded-xl text-white font-bold pr-10 text-xs sm:text-sm"
+                        required
+                        disabled={isPasswordLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                      <Lock className="size-3" /> {lang === "uz" ? "Parolni Tasdiqlang" : "Confirm Password"}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={confirmPasswordInput}
+                        onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                        className="border-white/10 focus-visible:ring-purple-500 h-11 sm:h-12 bg-white/5 rounded-xl text-white font-bold pr-10 text-xs sm:text-sm"
+                        required
+                        disabled={isPasswordLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isPasswordLoading}
+                    className="w-full font-bold h-11 sm:h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-xs sm:text-sm shadow-lg shadow-purple-600/30"
+                  >
+                    <ShieldCheck className="size-4" />
+                    {isPasswordLoading
+                      ? (lang === "uz" ? "O'RNATILMOQDA..." : "SETTING...")
+                      : (lang === "uz" ? "PAROLNI O'RNATISH VA BIRIKTIRISH" : "SET & LINK PASSWORD")}
+                  </Button>
+                </form>
+              ) : (
+                /* FORM TO CHANGE EXISTING PASSWORD */
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                      <Lock className="size-3" /> {lang === "uz" ? "Eski Parolingiz" : "Current Password"}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showCurrentPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={currentPasswordInput}
+                        onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                        className="border-white/10 focus-visible:ring-purple-500 h-11 sm:h-12 bg-white/5 rounded-xl text-white font-bold pr-10 text-xs sm:text-sm"
+                        required
+                        disabled={isPasswordLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                      <Lock className="size-3" /> {lang === "uz" ? "Yangi Parol" : "New Password"}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={newPasswordInput}
+                        onChange={(e) => setNewPasswordInput(e.target.value)}
+                        className="border-white/10 focus-visible:ring-purple-500 h-11 sm:h-12 bg-white/5 rounded-xl text-white font-bold pr-10 text-xs sm:text-sm"
+                        required
+                        disabled={isPasswordLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                      <Lock className="size-3" /> {lang === "uz" ? "Yangi Parolni Tasdiqlang" : "Confirm New Password"}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={confirmPasswordInput}
+                        onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                        className="border-white/10 focus-visible:ring-purple-500 h-11 sm:h-12 bg-white/5 rounded-xl text-white font-bold pr-10 text-xs sm:text-sm"
+                        required
+                        disabled={isPasswordLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isPasswordLoading}
+                    className="w-full font-bold h-11 sm:h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 text-xs sm:text-sm shadow-lg shadow-purple-600/30"
+                  >
+                    <KeyRound className="size-4" />
+                    {isPasswordLoading
+                      ? (lang === "uz" ? "ALMASHTIRILMOQDA..." : "CHANGING...")
+                      : (lang === "uz" ? "PAROLNI ALMASHTIRISH" : "CHANGE PASSWORD")}
+                  </Button>
+
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      onClick={handleSendResetEmail}
+                      disabled={isSendingResetEmail}
+                      className="text-xs text-purple-400 hover:text-purple-300 font-bold underline transition-colors"
+                    >
+                      {isSendingResetEmail 
+                        ? (lang === "uz" ? "Yuborilmoqda..." : "Sending...") 
+                        : (lang === "uz" ? "Eski parolingizni unutdingizmi? (Gmail-ga tiklash xabarini yuborish)" : "Forgot password? Send reset email")}
+                    </button>
+                  </div>
+                </form>
+              )}
             </Card>
 
             {/* 2. TO'LOVLAR TARIXI (PAYMENT HISTORY CARD) */}

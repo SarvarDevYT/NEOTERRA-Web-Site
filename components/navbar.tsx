@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, User as UserIcon, LogOut as LogOutIcon, Shield, Key, Mail, Lock } from "lucide-react"
+import { Menu, User as UserIcon, LogOut as LogOutIcon, Shield, Key, Mail, Lock, Eye, EyeOff, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "@/hooks/use-translation"
 import { type Language } from "@/lib/dictionaries"
@@ -36,6 +36,7 @@ import {
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut as firebaseSignOut,
 } from "firebase/auth"
 import { getUserProfile, updateMinecraftUsername } from "@/app/actions/player-profile"
@@ -54,6 +55,10 @@ export function Navbar() {
   // Form states
   const [emailInput, setEmailInput] = React.useState("")
   const [passwordInput, setPasswordInput] = React.useState("")
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [isForgotPassword, setIsForgotPassword] = React.useState(false)
+  const [resetEmailInput, setResetEmailInput] = React.useState("")
+  const [isSendingReset, setIsSendingReset] = React.useState(false)
   const [nickInput, setNickInput] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const [isLinking, setIsLinking] = React.useState(false)
@@ -77,7 +82,6 @@ export function Navbar() {
     })
     return () => unsubscribe()
   }, [setAuth, localLogout])
-
 
   const navLinks = [
     { name: "🏠 " + t("nav", "home"), href: "/" },
@@ -140,13 +144,49 @@ export function Navbar() {
       setEmailInput("")
       setPasswordInput("")
     } catch (error: any) {
+      console.error("Auth error:", error)
+      let msg = error.message || "Kirish/Ro'yxatdan o'tishda xatolik."
+      if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
+        msg = "Email yoki parol noto'g'ri. Agar siz Google orqali ro'yxatdan o'tgan bo'lsangiz, Google tugmasidan kiring yoki parolni tiklash xabarini yuboring."
+      }
       toast({
         title: "Xatolik!",
-        description: error.message || "Kirish/Ro'yxatdan o'tishda xatolik.",
+        description: msg,
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const mail = resetEmailInput.trim() || emailInput.trim()
+    if (!mail) {
+      toast({
+        title: "Xatolik",
+        description: "Parolni tiklash uchun Email manzilingizni kiriting.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSendingReset(true)
+    try {
+      await sendPasswordResetEmail(firebaseClientAuth, mail)
+      toast({
+        title: "Xabar Yuborildi! 📧",
+        description: `Parolni tiklash xabari ${mail} pochtasiga yuborildi. Gmail ilovangizni tekshiring!`,
+      })
+      setIsForgotPassword(false)
+    } catch (err: any) {
+      toast({
+        title: "Xatolik!",
+        description: err.message || "Parolni tiklash xabarini yuborishda xato yuz berdi.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSendingReset(false)
     }
   }
 
@@ -320,82 +360,149 @@ export function Navbar() {
                 <DialogHeader className="relative">
                   <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full pointer-events-none" />
                   <DialogTitle className="text-3xl font-black text-white uppercase italic tracking-tighter liquid-shadow relative z-10">
-                    NEO<span className="text-primary italic">TERRA</span> <span className="text-white/40">{authMode === "login" ? "KIRISH" : "ROYXATDAN O'TISH"}</span>
+                    NEO<span className="text-primary italic">TERRA</span> <span className="text-white/40">{isForgotPassword ? "PAROLNI TIKLASH" : authMode === "login" ? "KIRISH" : "ROYXATDAN O'TISH"}</span>
                   </DialogTitle>
                   <DialogDescription className="text-zinc-400 font-medium">
-                    {authMode === "login" ? "Tizimga kirish uchun ma'lumotlarni kiriting." : "Ro'yxatdan o'tish uchun ma'lumotlarni to'ldiring."}
+                    {isForgotPassword
+                      ? "Profilingizga bog'langan Email manzilingizni kiriting."
+                      : authMode === "login"
+                      ? "Tizimga kirish uchun ma'lumotlarni kiriting."
+                      : "Ro'yxatdan o'tish uchun ma'lumotlarni to'ldiring."}
                   </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 mt-2">
-                  <Button 
-                    onClick={handleGoogleLogin} 
-                    className="w-full font-bold h-12 bg-white text-black hover:bg-white/90 rounded-xl flex items-center justify-center gap-2"
-                    disabled={isLoading}
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#EA4335" d="M12 5.04c1.7 0 3.2.6 4.4 1.8l3.3-3.3C17.7 1.6 15 1 12 1 7.3 1 3.4 3.7 1.6 7.7l3.9 3c.9-2.7 3.4-4.7 6.5-4.7z"/>
-                      <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
-                      <path fill="#FBBC05" d="M5.5 14.7c-.2-.6-.3-1.3-.3-2.7s.1-2.1.3-2.7L1.6 6.3C.6 8.3 0 10.6 0 13s.6 4.7 1.6 6.7l3.9-3z"/>
-                      <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.6-2-6.5-4.7l-3.9 3C3.4 20.3 7.3 23 12 23z"/>
-                    </svg>
-                    Google orqali kirish
-                  </Button>
+                  {isForgotPassword ? (
+                    <form onSubmit={handleResetPassword} className="grid gap-4">
+                      <div className="grid gap-2">
+                        <label htmlFor="resetEmail" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                          <Mail className="size-3" /> Email Manzilingiz
+                        </label>
+                        <Input
+                          id="resetEmail"
+                          type="email"
+                          placeholder="example@neoterra.uz"
+                          value={resetEmailInput || emailInput}
+                          onChange={(e) => setResetEmailInput(e.target.value)}
+                          className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold"
+                          disabled={isSendingReset}
+                          required
+                        />
+                      </div>
 
-                  <div className="relative my-2">
-                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10" /></div>
-                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-zinc-950 px-2 text-zinc-500 font-bold">YOKI</span></div>
-                  </div>
+                      <Button 
+                        type="submit" 
+                        className="w-full font-black tracking-widest h-12 bg-primary hover:bg-primary/90 rounded-xl mt-2" 
+                        disabled={isSendingReset}
+                      >
+                        {isSendingReset ? "YUBORILMOQDA..." : "PAROLNI TIKLASH XABARINI YUBORISH"}
+                      </Button>
 
-                  <form onSubmit={handleEmailAuth} className="grid gap-4">
-                    <div className="grid gap-2">
-                      <label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
-                        <Mail className="size-3" /> Email
-                      </label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="example@neoterra.uz"
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
-                        className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold"
+                      <div className="text-center mt-2">
+                        <button 
+                          type="button"
+                          onClick={() => setIsForgotPassword(false)}
+                          className="text-xs text-zinc-400 hover:text-white font-bold underline"
+                        >
+                          ← Kirish oynasiga qaytish
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={handleGoogleLogin} 
+                        className="w-full font-bold h-12 bg-white text-black hover:bg-white/90 rounded-xl flex items-center justify-center gap-2"
                         disabled={isLoading}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <label htmlFor="password" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
-                        <Lock className="size-3" /> Parol
-                      </label>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={passwordInput}
-                        onChange={(e) => setPasswordInput(e.target.value)}
-                        className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold"
-                        disabled={isLoading}
-                        required
-                      />
-                    </div>
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#EA4335" d="M12 5.04c1.7 0 3.2.6 4.4 1.8l3.3-3.3C17.7 1.6 15 1 12 1 7.3 1 3.4 3.7 1.6 7.7l3.9 3c.9-2.7 3.4-4.7 6.5-4.7z"/>
+                          <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                          <path fill="#FBBC05" d="M5.5 14.7c-.2-.6-.3-1.3-.3-2.7s.1-2.1.3-2.7L1.6 6.3C.6 8.3 0 10.6 0 13s.6 4.7 1.6 6.7l3.9-3z"/>
+                          <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.6-2-6.5-4.7l-3.9 3C3.4 20.3 7.3 23 12 23z"/>
+                        </svg>
+                        Google orqali kirish
+                      </Button>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full font-black tracking-widest h-12 bg-primary hover:bg-primary/90 rounded-xl mt-2" 
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "TEKSHIRILMOQDA..." : authMode === "login" ? "KIRISH" : "RO'YXATDAN O'TISH"}
-                    </Button>
-                  </form>
+                      <div className="relative my-2">
+                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10" /></div>
+                        <div className="relative flex justify-center text-xs uppercase"><span className="bg-zinc-950 px-2 text-zinc-500 font-bold">YOKI</span></div>
+                      </div>
 
-                  <div className="text-center mt-2">
-                    <button 
-                      onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}
-                      className="text-xs text-primary hover:underline font-bold"
-                    >
-                      {authMode === "login" ? "Yangi hisob yaratish" : "Menda allaqachon hisob bor (Kirish)"}
-                    </button>
-                  </div>
+                      <form onSubmit={handleEmailAuth} className="grid gap-4">
+                        <div className="grid gap-2">
+                          <label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                            <Mail className="size-3" /> Email
+                          </label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="example@neoterra.uz"
+                            value={emailInput}
+                            onChange={(e) => setEmailInput(e.target.value)}
+                            className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold"
+                            disabled={isLoading}
+                            required
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <div className="flex items-center justify-between">
+                            <label htmlFor="password" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 flex items-center gap-1">
+                              <Lock className="size-3" /> Parol
+                            </label>
+                            {authMode === "login" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setResetEmailInput(emailInput)
+                                  setIsForgotPassword(true)
+                                }}
+                                className="text-[11px] text-primary hover:underline font-bold"
+                              >
+                                Parolni unutdingizmi?
+                              </button>
+                            )}
+                          </div>
+                          <div className="relative">
+                            <Input
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              value={passwordInput}
+                              onChange={(e) => setPasswordInput(e.target.value)}
+                              className="border-white/10 focus-visible:ring-primary h-12 bg-white/5 rounded-xl text-white font-bold pr-10"
+                              disabled={isLoading}
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                            >
+                              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <Button 
+                          type="submit" 
+                          className="w-full font-black tracking-widest h-12 bg-primary hover:bg-primary/90 rounded-xl mt-2" 
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "TEKSHIRILMOQDA..." : authMode === "login" ? "KIRISH" : "RO'YXATDAN O'TISH"}
+                        </Button>
+                      </form>
+
+                      <div className="text-center mt-2">
+                        <button 
+                          onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}
+                          className="text-xs text-primary hover:underline font-bold"
+                        >
+                          {authMode === "login" ? "Yangi hisob yaratish" : "Menda allaqachon hisob bor (Kirish)"}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </DialogContent>
             </Dialog>
