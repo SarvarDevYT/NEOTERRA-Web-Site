@@ -65,6 +65,7 @@ export async function sendTelegramAdminNotificationAction(text: string) {
         text,
         parse_mode: "HTML",
         disable_web_page_preview: true,
+        reply_markup: { remove_keyboard: true },
       }),
       cache: "no-store",
     })
